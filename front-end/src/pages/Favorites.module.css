@@ -1,0 +1,524 @@
+.pageWrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-page);
+}
+
+/* ── Page header ── */
+.pageHeader {
+  background: var(--brand-dark);
+  padding: 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* căn giữa */
+  gap: 16px;
+}
+
+.pageHeaderLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* căn giữa text */
+  gap: 6px;
+  text-align: center;
+}
+
+.pageTitle {
+  font-family: "Playfair Display", serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pageTitle i {
+  font-size: 24px;
+  color: var(--brand-mid);
+}
+
+.pageSub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.statsRow {
+  display: flex;
+  gap: 10px;
+}
+
+.statChip {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
+  padding: 10px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 72px;
+}
+
+.statNum {
+  font-family: "Playfair Display", serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.statLbl {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+}
+
+/* ── Sort bar ── */
+.sortBar {
+  background: #fff;
+  border-bottom: var(--border-card);
+  padding: 11px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: sticky;
+  top: 60px;
+  z-index: 98;
+  flex-wrap: wrap;
+}
+
+.sortRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sortLbl {
+  font-size: 12px;
+  color: #999;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.chip {
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(181, 115, 26, 0.22);
+  border-radius: 20px;
+  background: #fff;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  color: var(--brand-dark);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.chip i {
+  font-size: 13px;
+}
+.chip:hover {
+  background: var(--brand-light);
+  border-color: var(--brand);
+}
+.chipActive {
+  background: var(--brand-light);
+  border-color: var(--brand);
+  font-weight: 500;
+}
+
+/* Clear all */
+.btnClear {
+  height: 30px;
+  padding: 0 14px;
+  border: 1px solid rgba(226, 75, 74, 0.3);
+  border-radius: 20px;
+  background: #fff;
+  color: #a32d2d;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.btnClear:hover {
+  background: #fcebeb;
+}
+
+.confirmRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.confirmText {
+  font-size: 13px;
+  color: #a32d2d;
+  font-weight: 500;
+}
+
+.btnConfirmYes {
+  height: 28px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 20px;
+  background: #e24b4a;
+  color: #fff;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btnConfirmYes:hover {
+  background: #a32d2d;
+}
+
+.btnConfirmNo {
+  height: 28px;
+  padding: 0 14px;
+  border: 1px solid rgba(181, 115, 26, 0.25);
+  border-radius: 20px;
+  background: #fff;
+  color: var(--brand-dark);
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btnConfirmNo:hover {
+  background: var(--brand-light);
+}
+
+/* ── Feed ── */
+.feed {
+  flex: 1;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Empty state */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 64px 0;
+  text-align: center;
+}
+
+.empty i {
+  font-size: 44px;
+  color: #ddd;
+}
+
+.emptyTitle {
+  font-family: "Playfair Display", serif;
+  font-size: 18px;
+  color: var(--brand-dark);
+}
+
+.emptySub {
+  font-size: 13px;
+  color: #aaa;
+}
+
+.btnExplore {
+  margin-top: 8px;
+  height: 40px;
+  padding: 0 22px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.2s;
+}
+
+.btnExplore:hover {
+  background: var(--brand-dark);
+}
+
+/* ── Card ── */
+.card {
+  background: #fff;
+  border: var(--border-card);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  transition:
+    box-shadow 0.2s,
+    opacity 0.3s,
+    transform 0.3s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 20px rgba(122, 74, 10, 0.1);
+}
+
+.cardRemoving {
+  opacity: 0;
+  transform: translateX(24px);
+  pointer-events: none;
+}
+
+/* Card header */
+.cardHeader {
+  padding: 14px 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--brand-dark);
+  flex-shrink: 0;
+  border: 1.5px solid rgba(181, 115, 26, 0.2);
+}
+
+.posterInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.posterName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--brand-dark);
+}
+
+.postTime {
+  font-size: 11px;
+  color: #bbb;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.postTime i {
+  font-size: 11px;
+}
+
+.likedBadge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #a32d2d;
+  background: #fcebeb;
+  border: 1px solid rgba(226, 75, 74, 0.2);
+  border-radius: 20px;
+  padding: 3px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.likedBadge i {
+  font-size: 12px;
+  color: #e24b4a;
+}
+
+/* Card meta */
+.cardMeta {
+  padding: 10px 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.restName {
+  font-family: "Playfair Display", serif;
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--brand-dark);
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #888;
+}
+
+.metaItem i {
+  font-size: 13px;
+  color: var(--brand);
+}
+
+.stars {
+  display: flex;
+  gap: 1px;
+}
+.starF {
+  color: var(--brand-mid);
+  font-size: 13px;
+}
+.starE {
+  color: #ddd;
+  font-size: 13px;
+}
+.ratingVal {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--brand-dark);
+  margin-left: 3px;
+}
+
+.categoryBadge {
+  font-size: 11px;
+  padding: 2px 9px;
+  background: var(--brand-light);
+  color: var(--brand-dark);
+  border: 1px solid rgba(181, 115, 26, 0.22);
+  border-radius: 20px;
+}
+
+/* Card image */
+.cardImg {
+  width: 100%;
+  height: 220px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imgEmoji {
+  font-size: 56px;
+}
+
+/* Card footer */
+.cardFooter {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(181, 115, 26, 0.1);
+}
+
+.actions {
+  display: flex;
+  gap: 14px;
+}
+
+.actionItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.actionItem i {
+  font-size: 15px;
+}
+
+.btnGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.btnUnlike {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgba(226, 75, 74, 0.3);
+  border-radius: 8px;
+  background: #fff;
+  color: #a32d2d;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s;
+}
+
+.btnUnlike:hover {
+  background: #fcebeb;
+}
+
+.btnDetail {
+  height: 32px;
+  padding: 0 14px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.2s;
+}
+
+.btnDetail:hover {
+  background: var(--brand-dark);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .pageHeader {
+    padding: 20px 16px;
+  }
+  .pageTitle {
+    font-size: 22px;
+  }
+  .sortBar {
+    padding: 10px 16px;
+  }
+  .feed {
+    padding: 16px 12px 24px;
+  }
+  .cardImg {
+    height: 180px;
+  }
+  .likedBadge {
+    display: none;
+  }
+}

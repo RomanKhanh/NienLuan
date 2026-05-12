@@ -1,0 +1,99 @@
+.pageWrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-page);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  background: var(--brand-dark);
+  border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 2rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.bcItem {
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.2s;
+}
+.bcItem:hover { color: #fff; }
+
+.bcSep { color: rgba(255, 255, 255, 0.35); }
+
+.bcCurrent {
+  color: #fff;
+  font-weight: 500;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Main 2-col layout ── */
+.main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 20px;
+  padding: 24px 28px;
+  align-items: stretch;   /* cả 2 cột cùng kéo dài bằng nhau */
+}
+
+/* Cột trái: Map trên + Comments dưới */
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Map card — bo góc */
+.mapCard {
+  background: #fff;
+  border: var(--border-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  min-height: 320px;
+}
+
+/* Cột phải: flex column để card con fill hết chiều cao */
+.rightCol {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Not found */
+.notFound {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--brand-dark);
+  font-size: 16px;
+}
+
+.notFound a {
+  color: var(--brand);
+  font-weight: 500;
+}
+
+/* ── Responsive ── */
+@media (max-width: 960px) {
+  .main {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 16px;
+    align-items: start;
+  }
+}
+
+@media (max-width: 600px) {
+  .breadcrumb { padding: 8px 1rem; }
+  .main       { padding: 12px; }
+}

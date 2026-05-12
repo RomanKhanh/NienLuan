@@ -1,0 +1,352 @@
+.pageWrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-page);
+}
+
+/* ── Hero ── */
+.hero {
+  background: var(--brand-dark);
+  padding: 48px 24px 52px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.heroBlob1 {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: rgba(212, 148, 58, 0.08);
+  top: -80px;
+  right: -60px;
+  pointer-events: none;
+}
+
+.heroBlob2 {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: rgba(181, 115, 26, 0.07);
+  bottom: -50px;
+  left: -40px;
+  pointer-events: none;
+}
+
+.heroTitle {
+  font-family: "Playfair Display", serif;
+  font-size: 36px;
+  color: #fff;
+  line-height: 1.25;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.heroEm {
+  color: var(--brand-mid);
+  font-style: normal;
+}
+
+.heroSub {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 26px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero search */
+.heroSearch {
+  display: flex;
+  gap: 8px;
+  max-width: 520px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.heroSearchWrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.heroSearchWrap i {
+  position: absolute;
+  left: 13px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+  transition: color 0.2s;
+}
+
+.heroSearchWrap:focus-within i {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.heroSearchInp {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px 0 42px;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-md);
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  outline: none;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.heroSearchInp::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.heroSearchInp:focus {
+  border-color: var(--brand-mid);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.heroSearchBtn {
+  height: 46px;
+  padding: 0 22px;
+  background: var(--brand-mid);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.heroSearchBtn:hover {
+  background: var(--brand);
+}
+
+/* Stats */
+.heroStats {
+  display: flex;
+  justify-content: center;
+  gap: 36px;
+  margin-top: 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.statNum {
+  font-family: "Playfair Display", serif;
+  font-size: 24px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.statLbl {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── Post bar (filter + nút đăng bài) ── */
+.postBar {
+  background: #fff;
+  border-bottom: var(--border-card);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: sticky;
+  top: 60px;
+  z-index: 98;
+  flex-wrap: wrap;
+}
+
+.filterRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.filterLbl {
+  font-size: 12px;
+  color: #999;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.chip {
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(181, 115, 26, 0.22);
+  border-radius: 20px;
+  background: #fff;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  color: var(--brand-dark);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.chip i {
+  font-size: 13px;
+}
+.chip:hover {
+  background: var(--brand-light);
+  border-color: var(--brand);
+}
+.chipActive {
+  background: var(--brand-light);
+  border-color: var(--brand);
+  font-weight: 500;
+}
+
+.btnNewPost {
+  height: 36px;
+  padding: 0 16px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.btnNewPost:hover {
+  background: var(--brand-dark);
+}
+
+/* ── Feed ── */
+.feed {
+  flex: 1;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Empty state */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 0;
+  color: #bbb;
+}
+
+.empty i {
+  font-size: 40px;
+}
+.empty p {
+  font-size: 14px;
+}
+
+/* Load more */
+.loadMore {
+  display: flex;
+  justify-content: center;
+}
+
+.btnLoad {
+  height: 38px;
+  padding: 0 24px;
+  border: 1px solid rgba(181, 115, 26, 0.3);
+  border-radius: var(--radius-md);
+  background: #fff;
+  color: var(--brand-dark);
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.2s;
+}
+
+.btnLoad:hover:not(:disabled) {
+  background: var(--brand-light);
+}
+.btnLoad:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(122, 74, 10, 0.2);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .heroTitle {
+    font-size: 26px;
+  }
+  .heroStats {
+    gap: 20px;
+  }
+  .heroSearch {
+    flex-direction: column;
+  }
+  .heroSearchBtn {
+    width: 100%;
+    justify-content: center;
+  }
+  .postBar {
+    padding: 10px 16px;
+  }
+  .feed {
+    padding: 16px 12px 24px;
+  }
+}
