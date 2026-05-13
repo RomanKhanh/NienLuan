@@ -16,4 +16,13 @@ const callFindUserByEmailAPI = (email) => {
   return axios.get(URL);
 };
 
-export { callRegisterAPI, callFindUserByEmailAPI };
+const callLoginAPI = (email, password) => {
+  const URL = "/api/login";
+  const data = {
+    email,
+    password,
+  };
+  return axios.post(URL, data);
+};
+
+export { callRegisterAPI, callFindUserByEmailAPI, callLoginAPI };

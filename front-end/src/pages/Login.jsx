@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Login.module.css";
+import { notification } from "antd";
+import { callLoginAPI } from "../util/api";
+import { AuthContext } from "../context/auth.context";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -8,6 +11,7 @@ export default function Login() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { setAuth } = useContext(AuthContext);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -21,11 +25,34 @@ export default function Login() {
       return;
     }
     setLoading(true);
-    // TODO: thay bằng API call thực tế
-    setTimeout(() => {
+    // Call API to login
+    try {
+      const res = await callLoginAPI(form.email, form.password);
+      if (res?.TOKEN) {
+        localStorage.setItem("token", res.TOKEN);
+        notification.success({
+          message: "Đăng nhập thành công",
+          description: "Chào mừng " + res.USER.name + " đã trở lại!",
+        });
+        // Update auth context
+        setAuth({
+          isAuthenticated: true,
+          user: {
+            name: res.USER.name,
+            email: res.USER.email,
+            phone: res.USER.phone,
+          },
+        });
+        navigate("/");
+      }
+    } catch (err) {
+      notification.error({
+        message: "Đăng nhập thất bại",
+        description: "Email hoặc mật khẩu không đúng.",
+      });
+    } finally {
       setLoading(false);
-      navigate("/");
-    }, 1200);
+    }
   };
 
   return (

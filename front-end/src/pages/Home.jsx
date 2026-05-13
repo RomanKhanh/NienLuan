@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import PostCard from "../components/post/PostCard";
 import PostDialog from "../components/post/PostDialog";
+
 import styles from "./Home.module.css";
+
+import { AuthContext } from "../context/auth.context";
 
 const MOCK_POSTS = [
   {
@@ -85,6 +89,8 @@ const FILTERS = [
 const PAGE_SIZE = 3;
 
 export default function Home() {
+  const { isAuthenticated, auth, setAuth } = useContext(AuthContext);
+  console.log("Auth state in Home:", { auth });
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
