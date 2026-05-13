@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useContext, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
-
+import { AuthContext } from "../../context/auth.context";
 const MOCK_NOTIFICATIONS = [
   {
     id: 1,
@@ -64,6 +64,7 @@ export default function Header() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const { auth } = useContext(AuthContext);
   const dropdownRef = useRef(null);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -226,15 +227,27 @@ export default function Header() {
         </div>
 
         {/* Auth buttons */}
-        <button className={styles.btnLogin} onClick={() => navigate("/login")}>
-          Đăng nhập
-        </button>
-        <button
-          className={styles.btnPrimary}
-          onClick={() => navigate("/register")}
-        >
-          Đăng ký
-        </button>
+        {auth.isAuthenticated ? (
+          <div className={styles.userMenu}>
+            <span className={styles.userName}>{auth.user.name}</span>
+            {/* Future: Add dropdown menu for profile, settings, logout */}
+          </div>
+        ) : (
+          <>
+            <button
+              className={styles.btnLogin}
+              onClick={() => navigate("/login")}
+            >
+              Đăng nhập
+            </button>
+            <button
+              className={styles.btnPrimary}
+              onClick={() => navigate("/register")}
+            >
+              Đăng ký
+            </button>
+          </>
+        )}
       </div>
     </header>
   );

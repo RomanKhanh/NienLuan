@@ -29,7 +29,7 @@ export default function Login() {
     try {
       const res = await callLoginAPI(form.email, form.password);
       if (res?.TOKEN) {
-        localStorage.setItem("token", res.TOKEN);
+        localStorage.setItem("access_token", res.TOKEN);
         notification.success({
           message: "Đăng nhập thành công",
           description: "Chào mừng " + res.USER.name + " đã trở lại!",
@@ -44,11 +44,16 @@ export default function Login() {
           },
         });
         navigate("/");
+      } else {
+        notification.error({
+          message: "Đăng nhập thất bại",
+          description: res?.message || "Email hoặc mật khẩu không chính xác.",
+        });
       }
     } catch (err) {
       notification.error({
         message: "Đăng nhập thất bại",
-        description: "Email hoặc mật khẩu không đúng.",
+        description: "Có lỗi xảy ra khi đăng nhập.",
       });
     } finally {
       setLoading(false);

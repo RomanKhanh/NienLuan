@@ -8,6 +8,8 @@ export const AuthContext = createContext({
     phone: "",
   },
   setAuth: () => {},
+  loading: true,
+  setLoading: () => {},
 });
 
 export const AuthWrapper = (props) => {
@@ -20,8 +22,10 @@ export const AuthWrapper = (props) => {
     },
   });
 
+  const [loading, setLoading] = useState(true);
+
   return (
-    <AuthContext.Provider value={{ auth, setAuth }}>
+    <AuthContext.Provider value={{ auth, setAuth, loading, setLoading }}>
       {props.children}
     </AuthContext.Provider>
   );

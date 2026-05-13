@@ -37,8 +37,13 @@ const loginUser = async (req, res) => {
   }
 };
 
+const getAccountInfo = (req, res) => {
+  return res.status(200).json(req.user);
+};
+
 module.exports = {
   createUser,
   findUserByEmail,
   loginUser,
+  getAccountInfo,
 };
