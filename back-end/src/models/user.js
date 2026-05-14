@@ -15,12 +15,12 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
     },
 
     phone: String,
 
     avatar: String,
+    loginType: String,
   },
   {
     timestamps: true,

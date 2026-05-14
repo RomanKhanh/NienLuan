@@ -19,6 +19,7 @@ export const AuthWrapper = (props) => {
       name: "",
       email: "",
       phone: "",
+      avatar: "",
     },
   });
 

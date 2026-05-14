@@ -22,21 +22,36 @@ export default function App() {
 
   useEffect(() => {
     const fetchAccountInfo = async () => {
-      setLoading(true);
-      const res = await axios.get("/api/account");
-      console.log("Account info:", res);
-      if (res?.email) {
-        setAuth({
-          isAuthenticated: true,
-          user: {
-            name: res.name,
-            email: res.email,
-            phone: res.phone,
-          },
-        });
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+
+      try {
+        setLoading(true);
+
+        const res = await axios.get("/api/account");
+
+        if (res?.email) {
+          setAuth({
+            isAuthenticated: true,
+            user: {
+              name: res.name,
+              email: res.email,
+              phone: res.phone,
+            },
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        localStorage.removeItem("access_token");
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchAccountInfo();
   }, []);
 

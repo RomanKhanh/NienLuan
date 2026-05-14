@@ -25,4 +25,15 @@ const callLoginAPI = (email, password) => {
   return axios.post(URL, data);
 };
 
-export { callRegisterAPI, callFindUserByEmailAPI, callLoginAPI };
+const callGoogleLoginAPI = (data) => {
+  const URL = "/api/google-login";
+
+  return axios.post(URL, data);
+};
+
+export {
+  callRegisterAPI,
+  callFindUserByEmailAPI,
+  callLoginAPI,
+  callGoogleLoginAPI,
+};

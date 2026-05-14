@@ -2,7 +2,9 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 
 const auth = (req, res, next) => {
-  const whileList = ["/", "/login", "/register"];
+  const whileList = ["/", "/login", "/register", "/google-login"];
+
+  console.log(">>> Run auth middleware: ", req.path);
 
   if (whileList.includes(req.path)) {
     return next();
@@ -25,6 +27,7 @@ const auth = (req, res, next) => {
       email: decoded.email,
       name: decoded.name,
       phone: decoded.phone,
+      loginType: decoded.loginType,
     };
 
     next();

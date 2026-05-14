@@ -2,7 +2,9 @@ import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Login.module.css";
 import { notification } from "antd";
-import { callLoginAPI } from "../util/api";
+import { callLoginAPI, callGoogleLoginAPI } from "../util/api";
+import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 import { AuthContext } from "../context/auth.context";
 
 export default function Login() {
@@ -12,6 +14,49 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { setAuth } = useContext(AuthContext);
+
+  const loginGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      console.log(tokenResponse);
+
+      const res = await fetch(
+        `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokenResponse.access_token}`,
+      );
+
+      const userInfo = await res.json();
+
+      const backendRes = await callGoogleLoginAPI({
+        email: userInfo.email,
+        name: userInfo.name,
+      });
+
+      if (backendRes?.TOKEN) {
+        localStorage.setItem("access_token", backendRes.TOKEN);
+
+        notification.success({
+          message: "Đăng nhập thành công",
+          description: "Chào mừng " + userInfo.name,
+        });
+
+        setAuth({
+          isAuthenticated: true,
+          user: {
+            name: userInfo.name,
+            email: userInfo.email,
+            avatar: userInfo.picture,
+          },
+        });
+
+        navigate("/");
+      }
+    },
+
+    onError: () => {
+      notification.error({
+        message: "Google Login Failed",
+      });
+    },
+  });
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -57,6 +102,45 @@ export default function Login() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const decoded = jwtDecode(credentialResponse.credential);
+
+      console.log(decoded);
+
+      const res = await callGoogleLoginAPI({
+        email: decoded.email,
+        name: decoded.name,
+      });
+
+      if (res?.TOKEN) {
+        localStorage.setItem("access_token", res.TOKEN);
+
+        notification.success({
+          message: "Đăng nhập thành công",
+          description: "Chào mừng " + decoded.name + " đã trở lại!",
+        });
+
+        setAuth({
+          isAuthenticated: true,
+          user: {
+            name: decoded.name,
+            email: decoded.email,
+            avatar: decoded.picture,
+          },
+        });
+
+        navigate("/");
+      }
+    } catch (error) {
+      console.log(error);
+
+      notification.error({
+        message: "Google Login Failed",
+      });
     }
   };
 
@@ -153,7 +237,7 @@ export default function Login() {
 
         {/* Social login */}
         <div className={styles.socialGroup}>
-          <button className={styles.btnSocial}>
+          <button className={styles.btnSocial} onClick={() => loginGoogle()}>
             <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 fill="#4285F4"
@@ -173,18 +257,6 @@ export default function Login() {
               />
             </svg>
             Tiếp tục với Google
-          </button>
-          <button className={styles.btnSocial}>
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="#1877F2"
-              aria-hidden="true"
-            >
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-            </svg>
-            Tiếp tục với Facebook
           </button>
         </div>
 
