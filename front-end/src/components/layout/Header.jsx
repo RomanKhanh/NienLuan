@@ -2,6 +2,7 @@ import React, { useState, useContext, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import { AuthContext } from "../../context/auth.context";
+
 const MOCK_NOTIFICATIONS = [
   {
     id: 1,
@@ -62,41 +63,58 @@ const MOCK_NOTIFICATIONS = [
 
 export default function Header() {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
+  const [notiOpen, setNotiOpen] = useState(false);
+  const [avatarOpen, setAvatarOpen] = useState(false);
   const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
-  const { auth } = useContext(AuthContext);
-  const dropdownRef = useRef(null);
+  const { auth, setAuth } = useContext(AuthContext);
+
+  const notiRef = useRef(null);
+  const avatarRef = useRef(null);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  // Đóng dropdown khi click ra ngoài
+  const getInitials = (name = "") =>
+    name
+      .split(" ")
+      .slice(-2)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase();
+
   useEffect(() => {
     const handler = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setOpen(false);
-      }
+      if (notiRef.current && !notiRef.current.contains(e.target))
+        setNotiOpen(false);
+      if (avatarRef.current && !avatarRef.current.contains(e.target))
+        setAvatarOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleOpen = () => {
-    setOpen((o) => !o);
-  };
-
-  const markAllRead = () => {
+  const markAllRead = () =>
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
 
-  const markRead = (id) => {
+  const markRead = (id) =>
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
     );
-  };
 
   const deleteNotification = (e, id) => {
     e.stopPropagation();
     setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
+
+  const handleLogout = () => {
+    setAvatarOpen(false);
+    localStorage.removeItem("authToken");
+    setAuth({ isAuthenticated: false, user: null });
+    navigate("/login");
+  };
+
+  const handleViewProfile = () => {
+    setAvatarOpen(false);
+    navigate("/profile");
   };
 
   return (
@@ -122,116 +140,187 @@ export default function Header() {
       </nav>
 
       <div className={styles.rightGroup}>
-        {/* Notification bell */}
-        <div className={styles.notiWrap} ref={dropdownRef}>
-          <button
-            className={styles.bellBtn}
-            onClick={handleOpen}
-            aria-label={`Thông báo${unreadCount > 0 ? `, ${unreadCount} chưa đọc` : ""}`}
-            aria-expanded={open}
-          >
-            <i className="ti ti-bell" aria-hidden="true" />
-            {unreadCount > 0 && (
-              <span className={styles.badge}>
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </button>
-
-          {/* Dropdown */}
-          {open && (
-            <div className={styles.dropdown}>
-              <div className={styles.dropHeader}>
-                <span className={styles.dropTitle}>Thông báo</span>
+        {auth.isAuthenticated ? (
+          <>
+            {/* Chuông thông báo */}
+            <div className={styles.notiWrap} ref={notiRef}>
+              <button
+                className={styles.bellBtn}
+                onClick={() => {
+                  setNotiOpen((o) => !o);
+                  setAvatarOpen(false);
+                }}
+                aria-label={`Thông báo${unreadCount > 0 ? `, ${unreadCount} chưa đọc` : ""}`}
+                aria-expanded={notiOpen}
+              >
+                <i className="ti ti-bell" aria-hidden="true" />
                 {unreadCount > 0 && (
-                  <button className={styles.markAllBtn} onClick={markAllRead}>
-                    Đánh dấu tất cả đã đọc
-                  </button>
+                  <span className={styles.badge}>
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
                 )}
-              </div>
+              </button>
 
-              <div className={styles.dropList}>
-                {notifications.length === 0 && (
-                  <div className={styles.emptyNoti}>
-                    <i className="ti ti-bell-off" aria-hidden="true" />
-                    <span>Không có thông báo nào</span>
-                  </div>
-                )}
-
-                {notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    className={`${styles.notiItem} ${!n.read ? styles.notiUnread : ""}`}
-                    onClick={() => markRead(n.id)}
-                  >
-                    {/* Unread dot */}
-                    {!n.read && (
-                      <span className={styles.unreadDot} aria-hidden="true" />
+              {notiOpen && (
+                <div className={styles.dropdown}>
+                  <div className={styles.dropHeader}>
+                    <span className={styles.dropTitle}>Thông báo</span>
+                    {unreadCount > 0 && (
+                      <button
+                        className={styles.markAllBtn}
+                        onClick={markAllRead}
+                      >
+                        Đánh dấu tất cả đã đọc
+                      </button>
                     )}
+                  </div>
 
-                    {/* Avatar */}
-                    <div
-                      className={styles.notiAvatar}
-                      style={{ background: n.userBg }}
-                    >
-                      {n.userInitials}
+                  <div className={styles.dropList}>
+                    {notifications.length === 0 && (
+                      <div className={styles.emptyNoti}>
+                        <i className="ti ti-bell-off" aria-hidden="true" />
+                        <span>Không có thông báo nào</span>
+                      </div>
+                    )}
+                    {notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className={`${styles.notiItem} ${!n.read ? styles.notiUnread : ""}`}
+                        onClick={() => markRead(n.id)}
+                      >
+                        {!n.read && (
+                          <span
+                            className={styles.unreadDot}
+                            aria-hidden="true"
+                          />
+                        )}
+                        <div
+                          className={styles.notiAvatar}
+                          style={{ background: n.userBg }}
+                        >
+                          {n.userInitials}
+                        </div>
+                        <div
+                          className={`${styles.notiTypeIcon} ${n.type === "like" ? styles.iconLike : styles.iconComment}`}
+                        >
+                          <i
+                            className={`ti ${n.type === "like" ? "ti-heart" : "ti-message-circle"}`}
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <div className={styles.notiContent}>
+                          <p className={styles.notiText}>
+                            <strong>{n.user}</strong> {n.message}
+                          </p>
+                          <p className={styles.notiTarget}>{n.target}</p>
+                          <span className={styles.notiTime}>
+                            <i className="ti ti-clock" aria-hidden="true" />{" "}
+                            {n.time}
+                          </span>
+                        </div>
+                        <button
+                          className={styles.deleteBtn}
+                          onClick={(e) => deleteNotification(e, n.id)}
+                          aria-label="Xóa thông báo"
+                        >
+                          <i className="ti ti-x" aria-hidden="true" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {notifications.length > 0 && (
+                    <div className={styles.dropFooter}>
+                      <button
+                        className={styles.clearAllBtn}
+                        onClick={() => setNotifications([])}
+                      >
+                        <i className="ti ti-trash" aria-hidden="true" />
+                        Xóa tất cả thông báo
+                      </button>
                     </div>
+                  )}
+                </div>
+              )}
+            </div>
 
-                    {/* Icon type */}
-                    <div
-                      className={`${styles.notiTypeIcon} ${n.type === "like" ? styles.iconLike : styles.iconComment}`}
-                    >
-                      <i
-                        className={`ti ${n.type === "like" ? "ti-heart" : "ti-message-circle"}`}
-                        aria-hidden="true"
-                      />
+            {/* Avatar + dropdown */}
+            <div className={styles.avatarWrap} ref={avatarRef}>
+              <button
+                className={styles.avatarBtn}
+                onClick={() => {
+                  setAvatarOpen((o) => !o);
+                  setNotiOpen(false);
+                }}
+                aria-label="Tài khoản"
+                aria-expanded={avatarOpen}
+              >
+                {auth.user?.avatar ? (
+                  <img
+                    src={auth.user.avatar}
+                    alt={auth.user.name}
+                    className={styles.avatarImg}
+                  />
+                ) : (
+                  <span className={styles.avatarFallback}>
+                    {getInitials(auth.user?.name)}
+                  </span>
+                )}
+                <i
+                  className={`ti ti-chevron-down ${styles.avatarChevron} ${avatarOpen ? styles.avatarChevronOpen : ""}`}
+                  aria-hidden="true"
+                />
+              </button>
+
+              {avatarOpen && (
+                <div className={styles.avatarDropdown}>
+                  <div className={styles.avatarDropHeader}>
+                    <div className={styles.avatarDropAvatar}>
+                      {auth.user?.avatar ? (
+                        <img
+                          src={auth.user.avatar}
+                          alt={auth.user.name}
+                          className={styles.avatarDropImg}
+                        />
+                      ) : (
+                        <span className={styles.avatarDropFallback}>
+                          {getInitials(auth.user?.name)}
+                        </span>
+                      )}
                     </div>
-
-                    {/* Content */}
-                    <div className={styles.notiContent}>
-                      <p className={styles.notiText}>
-                        <strong>{n.user}</strong> {n.message}
-                      </p>
-                      <p className={styles.notiTarget}>{n.target}</p>
-                      <span className={styles.notiTime}>
-                        <i className="ti ti-clock" aria-hidden="true" />{" "}
-                        {n.time}
+                    <div className={styles.avatarDropInfo}>
+                      <span className={styles.avatarDropName}>
+                        {auth.user?.name}
+                      </span>
+                      <span className={styles.avatarDropEmail}>
+                        {auth.user?.email}
                       </span>
                     </div>
-
-                    {/* Delete */}
-                    <button
-                      className={styles.deleteBtn}
-                      onClick={(e) => deleteNotification(e, n.id)}
-                      aria-label="Xóa thông báo"
-                    >
-                      <i className="ti ti-x" aria-hidden="true" />
-                    </button>
                   </div>
-                ))}
-              </div>
 
-              {notifications.length > 0 && (
-                <div className={styles.dropFooter}>
+                  <div className={styles.avatarDropDivider} />
+
                   <button
-                    className={styles.clearAllBtn}
-                    onClick={() => setNotifications([])}
+                    className={styles.avatarDropItem}
+                    onClick={handleViewProfile}
                   >
-                    <i className="ti ti-trash" aria-hidden="true" />
-                    Xóa tất cả thông báo
+                    <i className="ti ti-user-circle" aria-hidden="true" />
+                    Thông tin tài khoản
+                  </button>
+
+                  <div className={styles.avatarDropDivider} />
+
+                  <button
+                    className={`${styles.avatarDropItem} ${styles.avatarDropLogout}`}
+                    onClick={handleLogout}
+                  >
+                    <i className="ti ti-logout" aria-hidden="true" />
+                    Đăng xuất
                   </button>
                 </div>
               )}
             </div>
-          )}
-        </div>
-
-        {/* Auth buttons */}
-        {auth.isAuthenticated ? (
-          <div className={styles.userMenu}>
-            <span className={styles.userName}>{auth.user.name}</span>
-            {/* Future: Add dropdown menu for profile, settings, logout */}
-          </div>
+          </>
         ) : (
           <>
             <button

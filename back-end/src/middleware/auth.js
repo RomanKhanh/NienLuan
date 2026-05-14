@@ -27,6 +27,7 @@ const auth = (req, res, next) => {
       email: decoded.email,
       name: decoded.name,
       phone: decoded.phone,
+      avatar: decoded.avatar,
       loginType: decoded.loginType,
     };
 

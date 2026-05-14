@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Favorites from "./pages/Favorites";
+import Profile from "./pages/Profile";
 import { useContext, useEffect } from "react";
 import { AuthContext } from "./context/auth.context";
 import axios from "./util/axios.customize";
@@ -41,6 +42,8 @@ export default function App() {
               name: res.name,
               email: res.email,
               phone: res.phone,
+              avatar: res.avatar,
+              loginType: res.loginType,
             },
           });
         }
@@ -64,6 +67,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/search" element={<Search />} />
       <Route path="/favorites" element={<Favorites />} />
+      <Route path="/profile" element={<Profile />} />
       <Route path="/restaurant/:id" element={<RestaurantDetail />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
