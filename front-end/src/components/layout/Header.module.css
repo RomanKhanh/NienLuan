@@ -77,21 +77,21 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 1.5px solid #e8d8be;
-  background: #fff;
+  border: #5a3e28;
+  background: none;
   color: #5a3e28;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   cursor: pointer;
   transition:
-    background 0.18s,
-    border-color 0.18s,
+    color 0.18s,
     transform 0.15s;
 }
 
 .bellBtn:hover {
-  background: #fdf3e3;
-  border-color: #d4a96a;
-  transform: scale(1.06);
+  color: #c4601a;
+  transform: scale(1.1);
+  background: none;
+  border-color: transparent;
 }
 
 .badge {
@@ -361,37 +361,38 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px 4px 4px;
-  border-radius: 24px;
-  border: 1.5px solid #e8d8be;
-  background: #fff;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  background: none;
   cursor: pointer;
   transition:
-    border-color 0.18s,
-    background 0.18s,
-    box-shadow 0.18s;
+    opacity 0.18s,
+    transform 0.15s;
 }
 
 .avatarBtn:hover {
-  border-color: #d4a96a;
-  background: #fdf3e3;
-  box-shadow: 0 2px 8px rgba(120, 70, 10, 0.1);
+  opacity: 0.85;
+  transform: scale(1.05);
+  border-color: transparent;
+  background: none;
+  box-shadow: none;
 }
 
 .avatarImg {
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   object-fit: cover;
 }
 
 .avatarFallback {
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: linear-gradient(135deg, #e8963a, #c4601a);
   color: #fff;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 700;
   display: flex;
   align-items: center;

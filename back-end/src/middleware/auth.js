@@ -4,8 +4,6 @@ const jwt = require("jsonwebtoken");
 const auth = (req, res, next) => {
   const whileList = ["/", "/login", "/register", "/google-login"];
 
-  console.log(">>> Run auth middleware: ", req.path);
-
   if (whileList.includes(req.path)) {
     return next();
   }
@@ -27,14 +25,12 @@ const auth = (req, res, next) => {
       email: decoded.email,
       name: decoded.name,
       phone: decoded.phone,
-      avatar: decoded.avatar,
       loginType: decoded.loginType,
     };
 
     next();
   } catch (error) {
-    console.log(error);
-
+    console.error("Token verification failed:", error);
     return res.status(400).json({
       message: "Invalid token.",
     });

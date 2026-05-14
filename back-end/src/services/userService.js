@@ -62,6 +62,7 @@ const findUserByEmailService = async (email) => {
         email: user.email,
         phone: user.phone,
         avatar: user.avatar,
+        loginType: user.loginType,
       },
     };
   } catch (error) {
@@ -88,7 +89,6 @@ const loginUserService = async (email, password) => {
           email: user.email,
           name: user.name,
           phone: user.phone,
-          avatar: user.avatar,
           loginType: user.loginType,
         };
         const token = jwt.sign(payload, process.env.JWT_KEY, {
@@ -125,7 +125,6 @@ const loginGoogleService = async (email) => {
     const payload = {
       email: user.email,
       name: user.name,
-      avatar: user.avatar,
       phone: user.phone,
       loginType: user.loginType,
     };
@@ -150,9 +149,109 @@ const loginGoogleService = async (email) => {
   }
 };
 
+const updateProfileService = async (
+  email,
+  newName,
+  newEmail,
+  newPhone,
+  newAvatar,
+) => {
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return {
+        EC: 1,
+        EM: "User not found",
+      };
+    }
+
+    // Update user profile
+    user.name = newName || user.name;
+    user.email = newEmail || user.email;
+    user.phone = newPhone || user.phone;
+    user.avatar = newAvatar || user.avatar;
+
+    await user.save();
+
+    const payload = {
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      loginType: user.loginType,
+    };
+    const token = jwt.sign(payload, process.env.JWT_KEY, {
+      expiresIn: process.env.JWT_EXPIRE_TIME,
+    });
+
+    return {
+      EC: 0,
+      EM: "Profile updated successfully",
+      USER: {
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        avatar: user.avatar,
+      },
+      TOKEN: token,
+    };
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    return { EC: 2, EM: "Failed to update profile" };
+  }
+};
+
+const changePasswordService = async (email, currentPassword, newPassword) => {
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return {
+        EC: 1,
+        EM: "User not found",
+      };
+    }
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      return {
+        EC: 2,
+        EM: "Current password is incorrect",
+      };
+    }
+
+    // Hash the new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedNewPassword;
+
+    await user.save();
+
+    const payload = {
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      loginType: user.loginType,
+    };
+    const token = jwt.sign(payload, process.env.JWT_KEY, {
+      expiresIn: process.env.JWT_EXPIRE_TIME,
+    });
+
+    return {
+      EC: 0,
+      EM: "Password changed successfully",
+      TOKEN: token,
+    };
+  } catch (error) {
+    console.error("Error changing password:", error);
+    return { EC: 3, EM: "Failed to change password" };
+  }
+};
+
 module.exports = {
   createUserService,
   findUserByEmailService,
   loginUserService,
   loginGoogleService,
+  updateProfileService,
+  changePasswordService,
 };

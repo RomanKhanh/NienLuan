@@ -73,6 +73,7 @@ export default function Login() {
     // Call API to login
     try {
       const res = await callLoginAPI(form.email, form.password);
+      console.log(res);
       if (res?.TOKEN) {
         localStorage.setItem("access_token", res.TOKEN);
         notification.success({
@@ -86,6 +87,7 @@ export default function Login() {
             name: res.USER.name,
             email: res.USER.email,
             phone: res.USER.phone,
+            avatar: res.USER.avatar,
           },
         });
         navigate("/");

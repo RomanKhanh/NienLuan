@@ -107,7 +107,7 @@ export default function Header() {
 
   const handleLogout = () => {
     setAvatarOpen(false);
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("access_token");
     setAuth({ isAuthenticated: false, user: null });
     navigate("/login");
   };

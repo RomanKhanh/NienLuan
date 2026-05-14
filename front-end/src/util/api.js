@@ -31,9 +31,25 @@ const callGoogleLoginAPI = (data) => {
   return axios.post(URL, data);
 };
 
+const callUpdateProfileAPI = (data) => {
+  const URL = "/api/update-profile";
+  return axios.patch(URL, data);
+};
+
+const callChangePasswordAPI = (currentPassword, newPassword) => {
+  const URL = "/api/change-password";
+  const data = {
+    currentPassword,
+    newPassword,
+  };
+  return axios.patch(URL, data);
+};
+
 export {
   callRegisterAPI,
   callFindUserByEmailAPI,
   callLoginAPI,
   callGoogleLoginAPI,
+  callUpdateProfileAPI,
+  callChangePasswordAPI,
 };

@@ -2,14 +2,15 @@ import React, { useState, useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/auth.context";
 import styles from "./Profile.module.css";
+import axios from "../util/axios.customize";
+import { callUpdateProfileAPI, callChangePasswordAPI } from "../util/api";
+import { notification } from "antd";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { auth, setAuth } = useContext(AuthContext);
   const fileInputRef = useRef(null);
   const user = auth.user || {};
-
-  console.log("User in Profile:", user.loginType); // Debugging line
 
   const [form, setForm] = useState({
     name: user.name || "",
@@ -22,7 +23,6 @@ export default function ProfilePage() {
   });
 
   const [avatarPreview, setAvatarPreview] = useState(user.avatar || null);
-  const [saved, setSaved] = useState(false);
   const [errors, setErrors] = useState({});
   const [showPassSection, setShowPassSection] = useState(false);
 
@@ -69,25 +69,50 @@ export default function ProfilePage() {
     return errs;
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) {
       setErrors(errs);
       return;
     }
-    setAuth((prev) => ({
-      ...prev,
-      user: {
-        ...prev.user,
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        avatar: form.avatar,
-      },
-    }));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2800);
+    try {
+      // Update profile info
+      const res = await callUpdateProfileAPI({
+        newName: form.name,
+        newEmail: form.email,
+        newPhone: form.phone,
+        newAvatar: form.avatar,
+      });
+
+      if (showPassSection && form.newPassword) {
+        // Update password
+        await callChangePasswordAPI(form.currentPassword, form.newPassword);
+      }
+
+      setAuth((prev) => ({
+        ...prev,
+        user: {
+          ...prev.user,
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          avatar: form.avatar,
+        },
+      }));
+      localStorage.removeItem("access_token");
+      localStorage.setItem("access_token", res.TOKEN);
+
+      notification.success({ message: "Thay đổi thông tin thành công" });
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      notification.error({
+        message: "Có lỗi xảy ra",
+        description:
+          err.response?.data?.message ||
+          "Đã có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại.",
+      });
+    }
   };
 
   // Password strength
@@ -183,6 +208,7 @@ export default function ProfilePage() {
                     placeholder="Nguyễn Văn A"
                     error={errors.name}
                     styles={styles}
+                    disabled={user.loginType === "GOOGLE"}
                   />
                   <Field
                     label="Số điện thoại"
@@ -204,12 +230,13 @@ export default function ProfilePage() {
                   placeholder="email@example.com"
                   error={errors.email}
                   styles={styles}
+                  disabled={user.loginType === "GOOGLE"}
                 />
               </div>
 
               {/* Section: Mật khẩu */}
               {/* Section: Mật khẩu — chỉ hiện nếu không phải Google */}
-              {user.loginType !== "G" && (
+              {user.loginType !== "GOOGLE" && (
                 <div className={styles.section}>
                   <button
                     type="button"
@@ -299,11 +326,6 @@ export default function ProfilePage() {
 
               {/* Actions */}
               <div className={styles.actions}>
-                {saved && (
-                  <span className={styles.savedMsg}>
-                    <i className="ti ti-circle-check" /> Lưu thành công!
-                  </span>
-                )}
                 <button
                   type="button"
                   className={styles.cancelBtn}
@@ -332,6 +354,7 @@ function Field({
   placeholder,
   error,
   styles,
+  disabled,
 }) {
   return (
     <div className={styles.fieldGroup}>
@@ -345,6 +368,7 @@ function Field({
           onChange={onChange}
           placeholder={placeholder}
           autoComplete="off"
+          disabled={disabled}
         />
       </div>
       {error && (

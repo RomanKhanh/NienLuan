@@ -3,6 +3,8 @@ const {
   findUserByEmailService,
   loginUserService,
   loginGoogleService,
+  updateProfileService,
+  changePasswordService,
 } = require("../services/userService");
 
 const createUser = async (req, res) => {
@@ -44,7 +46,7 @@ const googleLogin = async (req, res) => {
     const { email, name } = req.body;
     const existedUser = await findUserByEmailService(email);
     if (existedUser.EC !== 0) {
-      await createUserService(name, email, null, null, null);
+      await createUserService(name, email, null, null);
     }
     const user = await loginGoogleService(email);
     return res.status(200).json(user);
@@ -54,8 +56,36 @@ const googleLogin = async (req, res) => {
   }
 };
 
-const getAccountInfo = (req, res) => {
-  return res.status(200).json(req.user);
+const getAccountInfo = async (req, res) => {
+  const data = await findUserByEmailService(req.user.email);
+  return res.status(200).json(data);
+};
+
+const updateProfile = async (req, res) => {
+  try {
+    const { newName, newEmail, newPhone, newAvatar } = req.body;
+    const data = await updateProfileService(
+      req.user.email,
+      newName,
+      newEmail,
+      newPhone,
+      newAvatar,
+    );
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const result = await changePasswordService(
+    req.user.email,
+    currentPassword,
+    newPassword,
+  );
+  return res.status(200).json(result);
 };
 
 module.exports = {
@@ -64,4 +94,6 @@ module.exports = {
   loginUser,
   getAccountInfo,
   googleLogin,
+  updateProfile,
+  changePassword,
 };

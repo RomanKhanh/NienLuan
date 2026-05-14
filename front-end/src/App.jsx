@@ -34,16 +34,17 @@ export default function App() {
         setLoading(true);
 
         const res = await axios.get("/api/account");
+        console.log(res);
 
-        if (res?.email) {
+        if (res?.USER?.email) {
           setAuth({
             isAuthenticated: true,
             user: {
-              name: res.name,
-              email: res.email,
-              phone: res.phone,
-              avatar: res.avatar,
-              loginType: res.loginType,
+              name: res.USER.name,
+              email: res.USER.email,
+              phone: res.USER.phone,
+              avatar: res.USER.avatar,
+              loginType: res.USER.loginType,
             },
           });
         }
