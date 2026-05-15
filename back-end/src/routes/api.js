@@ -10,6 +10,8 @@ const {
   changePassword,
 } = require("../controller/userController");
 
+const { createRestaurant } = require("../controller/restaurantController");
+
 const apiRouter = express.Router();
 
 apiRouter.all("*", authMiddleware);
@@ -20,5 +22,6 @@ apiRouter.get("/users/:email", findUserByEmail);
 apiRouter.get("/account", getAccountInfo);
 apiRouter.patch("/update-profile", updateProfile);
 apiRouter.patch("/change-password", changePassword);
+apiRouter.post("/create-restaurant", createRestaurant);
 
 module.exports = apiRouter;
