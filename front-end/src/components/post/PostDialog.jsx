@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "./PostDialog.module.css";
+import { callCreateRestaurantAPI, callCreatePostAPI } from "../../util/api";
 
 const INIT_RESTAURANT = {
   name: "",
@@ -155,7 +156,7 @@ export default function PostDialog({ open, onClose, onSubmit }) {
     return errs;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validateStep2();
     if (Object.keys(errs).length) {
@@ -163,23 +164,95 @@ export default function PostDialog({ open, onClose, onSubmit }) {
       return;
     }
     setLoading(true);
-    const payload = {
-      restaurant: {
-        ...restaurant,
+
+    try {
+      // Format hours đúng kiểu model: [{ day, time, isToday }]
+      const days = [
+        "Thứ 2",
+        "Thứ 3",
+        "Thứ 4",
+        "Thứ 5",
+        "Thứ 6",
+        "Thứ 7",
+        "Chủ nhật",
+      ];
+      const todayIndex = new Date().getDay(); // 0 = CN, 1 = T2, ...
+      const hoursArr = days.map((day, i) => ({
+        day,
+        time: `${restaurant.openTime} - ${restaurant.closeTime}`,
+        isToday: (i + 1) % 7 === todayIndex % 7,
+      }));
+
+      // Bước 1: Tạo restaurant
+      const restaurantPayload = {
+        name: restaurant.name,
+        description: restaurant.description,
         category: selectedCategory,
+        address: restaurant.address,
+        addressSub: restaurant.addressSub,
+        phone: restaurant.phone,
+        priceRange: restaurant.priceRange,
         amenities: selectedAmenities.join(", "),
         tags: restaurant.tags
           .split(",")
           .map((t) => t.trim())
           .filter(Boolean),
-      },
-      post: { ...post },
-    };
-    setTimeout(() => {
-      setLoading(false);
-      onSubmit?.(payload);
+        images: [],
+        hours: hoursArr,
+        rating: 0,
+        reviewCount: 0,
+      };
+
+      const restaurantRes = await callCreateRestaurantAPI(restaurantPayload);
+
+      if (!restaurantRes || restaurantRes.EC !== 0) {
+        const errMsg =
+          typeof restaurantRes?.EM === "string"
+            ? restaurantRes.EM
+            : "Tạo nhà hàng thất bại. Vui lòng thử lại.";
+        setErrors({ submit: errMsg });
+        setLoading(false);
+        return;
+      }
+
+      const restaurantId = restaurantRes.DATA?.id
+        ? String(restaurantRes.DATA.id)
+        : null;
+
+      if (!restaurantId) {
+        setErrors({ submit: "Không lấy được ID nhà hàng. Vui lòng thử lại." });
+        setLoading(false);
+        return;
+      }
+
+      // Bước 2: Tạo post gắn với restaurant vừa tạo
+      const imageUrls = post.images.map((img) => img.url);
+      const postRes = await callCreatePostAPI(
+        restaurantId,
+        post.description,
+        imageUrls,
+        post.rating,
+      );
+
+      if (!postRes || postRes.EC !== 0) {
+        const postErrMsg =
+          typeof postRes?.EM === "string"
+            ? postRes.EM
+            : "Đăng bài thất bại. Vui lòng thử lại.";
+        setErrors({ submit: postErrMsg });
+        setLoading(false);
+        return;
+      }
+
+      // Thành công
+      onSubmit?.({ restaurant: restaurantRes.DATA, post: postRes.POST });
       onClose();
-    }, 1000);
+    } catch (error) {
+      console.error("Submit error:", error);
+      setErrors({ submit: "Có lỗi xảy ra. Vui lòng thử lại." });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const progress = step === 1 ? 50 : 100;
@@ -612,6 +685,20 @@ export default function PostDialog({ open, onClose, onSubmit }) {
             </div>
 
             <div className={styles.dialogFooter}>
+              {errors.submit && (
+                <span
+                  style={{
+                    fontSize: "0.78rem",
+                    color: "#d44a1a",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                    flex: 1,
+                  }}
+                >
+                  <i className="ti ti-alert-circle" /> {errors.submit}
+                </span>
+              )}
               <button
                 type="button"
                 className={styles.btnBack}

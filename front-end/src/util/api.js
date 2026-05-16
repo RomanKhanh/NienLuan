@@ -45,6 +45,22 @@ const callChangePasswordAPI = (currentPassword, newPassword) => {
   return axios.patch(URL, data);
 };
 
+const callCreateRestaurantAPI = (data) => {
+  const URL = "/api/create-restaurant";
+  return axios.post(URL, data);
+};
+
+const callCreatePostAPI = (restaurantId, description, images, rating) => {
+  const URL = "/api/create-post";
+  const data = {
+    restaurantId,
+    description,
+    images,
+    rating,
+  };
+  return axios.post(URL, data);
+};
+
 export {
   callRegisterAPI,
   callFindUserByEmailAPI,
@@ -52,4 +68,6 @@ export {
   callGoogleLoginAPI,
   callUpdateProfileAPI,
   callChangePasswordAPI,
+  callCreateRestaurantAPI,
+  callCreatePostAPI,
 };

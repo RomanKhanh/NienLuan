@@ -18,7 +18,7 @@ const createPostService = async (data) => {
     console.log(error);
     return {
       EC: 1,
-      EM: error,
+      EM: error?.message || "Tạo bài đăng thất bại",
     };
   }
 };

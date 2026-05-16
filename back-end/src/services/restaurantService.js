@@ -21,6 +21,7 @@ const createRestaurantService = async (data) => {
       EC: 0,
       EM: "Created Successfully",
       DATA: {
+        id: newRestaurant._id,
         name: newRestaurant.name,
       },
     };

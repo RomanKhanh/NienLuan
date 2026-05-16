@@ -7,7 +7,7 @@ const createPost = async (req, res) => {
   try {
     const { restaurantId, description, images, rating } = req.body;
     const data = {
-      userId: req.user.id,
+      userId: req.user._id || req.user.id,
       restaurantId: restaurantId,
       description: description,
       images: images,
