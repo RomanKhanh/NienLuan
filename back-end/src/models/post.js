@@ -14,14 +14,6 @@ const postSchema = new mongoose.Schema(
       required: true,
     },
 
-    // Thông tin snapshot của quán tại thời điểm đăng
-    // (phòng trường hợp quán bị xoá/đổi tên về sau)
-    restaurantSnapshot: {
-      name: { type: String, required: true },
-      address: { type: String, required: true },
-      category: { type: String },
-    },
-
     description: {
       type: String,
       required: true,

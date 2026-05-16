@@ -15,6 +15,8 @@ const {
   getRestaurantByID,
 } = require("../controller/restaurantController");
 
+const { createPost, getPostByID } = require("../controller/postController");
+
 const apiRouter = express.Router();
 
 apiRouter.all("*", authMiddleware);
@@ -31,5 +33,9 @@ apiRouter.patch("/change-password", changePassword);
 //Restaurant
 apiRouter.post("/create-restaurant", createRestaurant);
 apiRouter.get("/restaurant/:id", getRestaurantByID);
+
+//Post
+apiRouter.post("/create-post", createPost);
+apiRouter.get("/post/:id", getPostByID);
 
 module.exports = apiRouter;

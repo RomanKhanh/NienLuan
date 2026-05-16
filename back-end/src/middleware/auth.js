@@ -21,12 +21,7 @@ const auth = (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_KEY);
 
-    req.user = {
-      email: decoded.email,
-      name: decoded.name,
-      phone: decoded.phone,
-      loginType: decoded.loginType,
-    };
+    req.user = decoded;
 
     next();
   } catch (error) {

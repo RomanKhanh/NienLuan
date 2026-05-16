@@ -45,21 +45,7 @@ const getRestaurantByIDService = async (id) => {
     return {
       EC: 0,
       EM: "Find restaurant successfully",
-      RESTAURANT: {
-        name: restaurant.name,
-        description: restaurant.description,
-        category: restaurant.category,
-        address: restaurant.address,
-        addressSub: restaurant.addressSub,
-        phone: restaurant.phone,
-        priceRange: restaurant.priceRange,
-        amenities: restaurant.amenities,
-        tags: restaurant.tags,
-        images: restaurant.images,
-        hours: restaurant.hours,
-        rating: restaurant.rating,
-        reviewCount: restaurant.reviewCount,
-      },
+      RESTAURANT: restaurant,
     };
   } catch (error) {
     console.log(">>> Error find restaurant by email: ", error);

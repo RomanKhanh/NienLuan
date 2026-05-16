@@ -86,6 +86,7 @@ const loginUserService = async (email, password) => {
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (isPasswordValid) {
         const payload = {
+          id: user.id,
           email: user.email,
           name: user.name,
           phone: user.phone,
@@ -123,6 +124,7 @@ const loginGoogleService = async (email) => {
   try {
     const user = await User.findOne({ email });
     const payload = {
+      id: user.id,
       email: user.email,
       name: user.name,
       phone: user.phone,
@@ -174,6 +176,7 @@ const updateProfileService = async (
     await user.save();
 
     const payload = {
+      id: user.id,
       email: user.email,
       name: user.name,
       phone: user.phone,
@@ -227,6 +230,7 @@ const changePasswordService = async (email, currentPassword, newPassword) => {
     await user.save();
 
     const payload = {
+      id: user.id,
       email: user.email,
       name: user.name,
       phone: user.phone,
