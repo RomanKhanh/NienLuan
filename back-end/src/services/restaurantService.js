@@ -33,4 +33,42 @@ const createRestaurantService = async (data) => {
   }
 };
 
-module.exports = { createRestaurantService };
+const getRestaurantByIDService = async (id) => {
+  try {
+    const restaurant = await Restaurant.findById(id);
+    if (!restaurant) {
+      return {
+        EC: 1,
+        EM: "Restaurant not found",
+      };
+    }
+    return {
+      EC: 0,
+      EM: "Find restaurant successfully",
+      RESTAURANT: {
+        name: restaurant.name,
+        description: restaurant.description,
+        category: restaurant.category,
+        address: restaurant.address,
+        addressSub: restaurant.addressSub,
+        phone: restaurant.phone,
+        priceRange: restaurant.priceRange,
+        amenities: restaurant.amenities,
+        tags: restaurant.tags,
+        images: restaurant.images,
+        hours: restaurant.hours,
+        rating: restaurant.rating,
+        reviewCount: restaurant.reviewCount,
+      },
+    };
+  } catch (error) {
+    console.log(">>> Error find restaurant by email: ", error);
+    return {
+      EC: 2,
+      EM: "Failed to find restaurant",
+      ERROR: error.message,
+    };
+  }
+};
+
+module.exports = { createRestaurantService, getRestaurantByIDService };

@@ -1,26 +1,63 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "./PostDialog.module.css";
 
-const INITIAL = {
-  restaurantName: "",
+const INIT_RESTAURANT = {
+  name: "",
   description: "",
+  category: "",
+  address: "",
+  addressSub: "",
+  phone: "",
+  priceRange: "",
+  amenities: "",
+  tags: "",
   openTime: "06:00",
   closeTime: "22:00",
-  address: "",
-  images: [],
 };
 
+const INIT_POST = { description: "", rating: 0, images: [] };
+
+const CATEGORIES = [
+  "Cơm tấm",
+  "Phở",
+  "Bún bò",
+  "Bánh xèo",
+  "Hủ tiếu",
+  "Lẩu",
+  "Hải sản",
+  "Đồ nướng",
+  "Chay",
+  "Cà phê & Tráng miệng",
+];
+
+const AMENITY_OPTIONS = [
+  "Wifi",
+  "Điều hoà",
+  "Chỗ đậu xe",
+  "Ship tận nơi",
+  "Phòng riêng",
+  "Karaoke",
+];
+
 export default function PostDialog({ open, onClose, onSubmit }) {
-  const [form, setForm] = useState(INITIAL);
+  const [step, setStep] = useState(1);
+  const [restaurant, setRestaurant] = useState(INIT_RESTAURANT);
+  const [post, setPost] = useState(INIT_POST);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [selectedAmenities, setSelectedAmenities] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!open) {
-      setForm(INITIAL);
+      setStep(1);
+      setRestaurant(INIT_RESTAURANT);
+      setPost(INIT_POST);
       setErrors({});
+      setSelectedAmenities([]);
+      setSelectedCategory("");
     }
   }, [open]);
 
@@ -34,342 +71,639 @@ export default function PostDialog({ open, onClose, onSubmit }) {
 
   if (!open) return null;
 
-  const handleChange = (e) => {
+  const handleRestaurantChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setRestaurant((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  // Xử lý file ảnh
-  const processFiles = (files) => {
-    const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-    const valid = Array.from(files).filter((f) => validTypes.includes(f.type));
-
-    if (!valid.length) return;
-
-    const readers = valid.map(
-      (file) =>
-        new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) =>
-            resolve({
-              id: Date.now() + Math.random(),
-              url: e.target.result,
-              name: file.name,
-              size: file.size,
-            });
-          reader.readAsDataURL(file);
-        }),
+  const toggleAmenity = (a) =>
+    setSelectedAmenities((prev) =>
+      prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a],
     );
 
-    Promise.all(readers).then((newImgs) => {
-      setForm((prev) => ({
+  const validateStep1 = () => {
+    const errs = {};
+    if (!restaurant.name.trim()) errs.name = "Vui lòng nhập tên nhà hàng.";
+    if (!restaurant.address.trim()) errs.address = "Vui lòng nhập địa chỉ.";
+    if (!selectedCategory) errs.category = "Vui lòng chọn loại ẩm thực.";
+    if (restaurant.openTime >= restaurant.closeTime)
+      errs.closeTime = "Giờ đóng cửa phải sau giờ mở cửa.";
+    return errs;
+  };
+
+  const handleNext = (e) => {
+    e.preventDefault();
+    const errs = validateStep1();
+    if (Object.keys(errs).length) {
+      setErrors(errs);
+      return;
+    }
+    setErrors({});
+    setStep(2);
+  };
+
+  const handlePostChange = (e) => {
+    const { name, value } = e.target;
+    setPost((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const processFiles = (files) => {
+    const valid = Array.from(files).filter((f) =>
+      ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(f.type),
+    );
+    if (!valid.length) return;
+    Promise.all(
+      valid.map(
+        (file) =>
+          new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) =>
+              resolve({
+                id: Date.now() + Math.random(),
+                url: e.target.result,
+                name: file.name,
+              });
+            reader.readAsDataURL(file);
+          }),
+      ),
+    ).then((newImgs) => {
+      setPost((prev) => ({
         ...prev,
-        images: [...prev.images, ...newImgs].slice(0, 5), // tối đa 5 ảnh
+        images: [...prev.images, ...newImgs].slice(0, 5),
       }));
     });
   };
-
-  const handleFileChange = (e) => processFiles(e.target.files);
 
   const handleDrop = (e) => {
     e.preventDefault();
     setDragging(false);
     processFiles(e.dataTransfer.files);
   };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setDragging(true);
-  };
-  const handleDragLeave = () => setDragging(false);
-
-  const removeImage = (id) => {
-    setForm((prev) => ({
+  const removeImage = (id) =>
+    setPost((prev) => ({
       ...prev,
-      images: prev.images.filter((img) => img.id !== id),
+      images: prev.images.filter((i) => i.id !== id),
     }));
-  };
 
-  const validate = () => {
+  const validateStep2 = () => {
     const errs = {};
-    if (!form.restaurantName.trim())
-      errs.restaurantName = "Vui lòng nhập tên quán.";
-    if (!form.description.trim()) errs.description = "Vui lòng nhập mô tả.";
-    if (!form.address.trim()) errs.address = "Vui lòng nhập địa chỉ.";
-    if (form.openTime >= form.closeTime)
-      errs.closeTime = "Giờ đóng cửa phải sau giờ mở cửa.";
+    if (!post.description.trim())
+      errs.postDescription = "Vui lòng mô tả trải nghiệm của bạn.";
+    if (!post.rating) errs.rating = "Vui lòng chọn số sao.";
     return errs;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const errs = validate();
+    const errs = validateStep2();
     if (Object.keys(errs).length) {
       setErrors(errs);
       return;
     }
     setLoading(true);
-    // TODO: POST /api/posts
+    const payload = {
+      restaurant: {
+        ...restaurant,
+        category: selectedCategory,
+        amenities: selectedAmenities.join(", "),
+        tags: restaurant.tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
+      },
+      post: { ...post },
+    };
     setTimeout(() => {
       setLoading(false);
-      onSubmit?.(form);
+      onSubmit?.(payload);
       onClose();
     }, 1000);
   };
 
+  const progress = step === 1 ? 50 : 100;
+
   return (
     <>
-      <div className={styles.overlay} onClick={onClose} aria-hidden="true" />
-
-      <div
-        className={styles.dialog}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="dialog-title"
-      >
-        {/* Header */}
-        <div className={styles.dialogHeader}>
-          <h2 className={styles.dialogTitle} id="dialog-title">
-            <i className="ti ti-pencil-plus" aria-hidden="true" /> Đăng bài mới
-          </h2>
+      <div className={styles.overlay} onClick={onClose} />
+      <div className={styles.dialog} role="dialog" aria-modal="true">
+        {/* ── Top bar ── */}
+        <div className={styles.dialogTop}>
+          <div className={styles.stepIndicator}>
+            <div
+              className={`${styles.stepDot} ${step >= 1 ? styles.stepDotActive : ""}`}
+            >
+              <i className="ti ti-building-store" />
+            </div>
+            <div className={styles.stepLine}>
+              <div
+                className={styles.stepLineFill}
+                style={{ width: step === 2 ? "100%" : "0%" }}
+              />
+            </div>
+            <div
+              className={`${styles.stepDot} ${step >= 2 ? styles.stepDotActive : ""}`}
+            >
+              <i className="ti ti-pencil" />
+            </div>
+          </div>
+          <div className={styles.stepLabels}>
+            <span
+              className={
+                step === 1 ? styles.stepLabelActive : styles.stepLabelDone
+              }
+            >
+              Thông tin quán
+            </span>
+            <span
+              className={
+                step === 2 ? styles.stepLabelActive : styles.stepLabelIdle
+              }
+            >
+              Bài đánh giá
+            </span>
+          </div>
           <button
             className={styles.closeBtn}
             onClick={onClose}
             aria-label="Đóng"
           >
-            <i className="ti ti-x" aria-hidden="true" />
+            <i className="ti ti-x" />
           </button>
         </div>
 
-        {/* Form */}
-        <form className={styles.form} onSubmit={handleSubmit} noValidate>
-          <div className={styles.body}>
-            {/* Tên quán */}
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="restaurantName">
-                Tên quán ăn <span className={styles.required}>*</span>
-              </label>
-              <div className={styles.inputWrap}>
-                <i className="ti ti-tools-kitchen-2" aria-hidden="true" />
-                <input
-                  id="restaurantName"
-                  name="restaurantName"
-                  type="text"
-                  placeholder="VD: Quán Bà Cẩm — Cơm Tấm"
-                  value={form.restaurantName}
-                  onChange={handleChange}
-                  className={`${styles.input} ${errors.restaurantName ? styles.inputErr : ""}`}
-                />
-              </div>
-              {errors.restaurantName && (
-                <span className={styles.errMsg}>{errors.restaurantName}</span>
-              )}
-            </div>
+        {/* Progress bar */}
+        <div className={styles.progressTrack}>
+          <div
+            className={styles.progressFill}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
 
-            {/* Mô tả */}
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="description">
-                Mô tả quán ăn <span className={styles.required}>*</span>
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                placeholder="Chia sẻ trải nghiệm, đặc điểm nổi bật của quán..."
-                value={form.description}
-                onChange={handleChange}
-                rows={3}
-                className={`${styles.textarea} ${errors.description ? styles.inputErr : ""}`}
-              />
-              {errors.description && (
-                <span className={styles.errMsg}>{errors.description}</span>
-              )}
-            </div>
-
-            {/* Giờ mở / đóng cửa */}
-            <div className={styles.timeRow}>
-              <div className={styles.field} style={{ flex: 1 }}>
-                <label className={styles.label} htmlFor="openTime">
-                  <i className="ti ti-door-enter" aria-hidden="true" /> Giờ mở
-                  cửa
-                </label>
-                <div className={styles.inputWrap}>
-                  <i className="ti ti-clock" aria-hidden="true" />
-                  <input
-                    id="openTime"
-                    name="openTime"
-                    type="time"
-                    value={form.openTime}
-                    onChange={handleChange}
-                    className={styles.input}
-                  />
+        {/* ══════════ STEP 1 ══════════ */}
+        {step === 1 && (
+          <>
+            {/* form nằm TRONG body — body là div scroll */}
+            <div className={styles.body}>
+              <form id="step1-form" onSubmit={handleNext} noValidate>
+                <div className={styles.stepTitle}>
+                  <i className="ti ti-building-store" />
+                  <div>
+                    <h2>Thông tin nhà hàng</h2>
+                    <p>Cho chúng tôi biết quán bạn muốn chia sẻ</p>
+                  </div>
                 </div>
-              </div>
-              <div className={styles.timeSep}>–</div>
-              <div className={styles.field} style={{ flex: 1 }}>
-                <label className={styles.label} htmlFor="closeTime">
-                  <i className="ti ti-door-exit" aria-hidden="true" /> Giờ đóng
-                  cửa
-                </label>
-                <div className={styles.inputWrap}>
-                  <i className="ti ti-clock" aria-hidden="true" />
-                  <input
-                    id="closeTime"
-                    name="closeTime"
-                    type="time"
-                    value={form.closeTime}
-                    onChange={handleChange}
-                    className={`${styles.input} ${errors.closeTime ? styles.inputErr : ""}`}
-                  />
-                </div>
-                {errors.closeTime && (
-                  <span className={styles.errMsg}>{errors.closeTime}</span>
-                )}
-              </div>
-            </div>
 
-            {/* Địa chỉ */}
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="address">
-                Địa chỉ quán <span className={styles.required}>*</span>
-              </label>
-              <div className={styles.inputWrap}>
-                <i className="ti ti-map-pin" aria-hidden="true" />
-                <input
-                  id="address"
-                  name="address"
-                  type="text"
-                  placeholder="VD: 105 Trần Hưng Đạo, Ninh Kiều, Cần Thơ"
-                  value={form.address}
-                  onChange={handleChange}
-                  className={`${styles.input} ${errors.address ? styles.inputErr : ""}`}
-                />
-              </div>
-              {errors.address && (
-                <span className={styles.errMsg}>{errors.address}</span>
-              )}
-            </div>
-
-            {/* Upload ảnh */}
-            <div className={styles.field}>
-              <label className={styles.label}>
-                <i className="ti ti-photo" aria-hidden="true" /> Hình ảnh quán
-                <span className={styles.labelNote}>(tối đa 5 ảnh)</span>
-              </label>
-
-              {/* Drop zone */}
-              {form.images.length < 5 && (
-                <div
-                  className={`${styles.dropZone} ${dragging ? styles.dropZoneActive : ""}`}
-                  onDrop={handleDrop}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onClick={() => fileInputRef.current?.click()}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Khu vực tải ảnh lên"
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && fileInputRef.current?.click()
-                  }
+                <Field
+                  label="Tên quán ăn"
+                  required
+                  icon="ti-tools-kitchen-2"
+                  error={errors.name}
                 >
                   <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
-                    multiple
-                    className={styles.fileInput}
-                    onChange={handleFileChange}
+                    name="name"
+                    type="text"
+                    placeholder="VD: Quán Bà Cẩm — Cơm Tấm"
+                    value={restaurant.name}
+                    onChange={handleRestaurantChange}
+                    className={`${styles.input} ${errors.name ? styles.inputErr : ""}`}
                   />
-                  <i className="ti ti-cloud-upload" aria-hidden="true" />
-                  <p className={styles.dropText}>
-                    Kéo thả ảnh vào đây hoặc{" "}
-                    <span className={styles.dropLink}>chọn từ máy</span>
-                  </p>
-                  <p className={styles.dropHint}>
-                    JPG, PNG, WEBP — tối đa 5 ảnh
-                  </p>
-                </div>
-              )}
+                </Field>
 
-              {/* Preview grid */}
-              {form.images.length > 0 && (
-                <div className={styles.previewGrid}>
-                  {form.images.map((img, idx) => (
-                    <div key={img.id} className={styles.previewItem}>
-                      <img
-                        src={img.url}
-                        alt={`Ảnh ${idx + 1}`}
-                        className={styles.previewImg}
-                      />
-                      <div className={styles.previewOverlay}>
-                        <span className={styles.previewIndex}>{idx + 1}</span>
-                        <button
-                          type="button"
-                          className={styles.removeImgBtn}
-                          onClick={() => removeImage(img.id)}
-                          aria-label={`Xóa ảnh ${idx + 1}`}
-                        >
-                          <i className="ti ti-trash" aria-hidden="true" />
-                        </button>
-                      </div>
-                      {idx === 0 && (
-                        <span className={styles.mainBadge}>Ảnh bìa</span>
-                      )}
-                    </div>
-                  ))}
-
-                  {/* Thêm ảnh nếu chưa đủ 5 */}
-                  {form.images.length < 5 && (
-                    <button
-                      type="button"
-                      className={styles.addMoreBtn}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <i className="ti ti-plus" aria-hidden="true" />
-                      <span>Thêm ảnh</span>
-                    </button>
+                <div className={styles.field}>
+                  <label className={styles.label}>
+                    <i className="ti ti-category" /> Loại ẩm thực{" "}
+                    <span className={styles.required}>*</span>
+                  </label>
+                  <div className={styles.chipGrid}>
+                    {CATEGORIES.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        className={`${styles.categoryChip} ${selectedCategory === c ? styles.categoryChipActive : ""}`}
+                        onClick={() => {
+                          setSelectedCategory(c);
+                          setErrors((e) => ({ ...e, category: "" }));
+                        }}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                  {errors.category && (
+                    <span className={styles.errMsg}>{errors.category}</span>
                   )}
                 </div>
-              )}
 
-              <p className={styles.imageCount}>
-                {form.images.length}/5 ảnh đã chọn
-                {form.images.length > 0 && (
-                  <button
-                    type="button"
-                    className={styles.clearImgBtn}
-                    onClick={() => setForm((prev) => ({ ...prev, images: [] }))}
-                  >
-                    Xóa tất cả
-                  </button>
-                )}
-              </p>
+                <Field
+                  label="Địa chỉ quán"
+                  required
+                  icon="ti-map-pin"
+                  error={errors.address}
+                >
+                  <input
+                    name="address"
+                    type="text"
+                    placeholder="VD: 105 Trần Hưng Đạo, Ninh Kiều, Cần Thơ"
+                    value={restaurant.address}
+                    onChange={handleRestaurantChange}
+                    className={`${styles.input} ${errors.address ? styles.inputErr : ""}`}
+                  />
+                </Field>
+
+                <Field label="Khu vực / Quận huyện" icon="ti-location">
+                  <input
+                    name="addressSub"
+                    type="text"
+                    placeholder="VD: Quận Ninh Kiều, Cần Thơ"
+                    value={restaurant.addressSub}
+                    onChange={handleRestaurantChange}
+                    className={styles.input}
+                  />
+                </Field>
+
+                <div className={styles.timeRow}>
+                  <div className={styles.field} style={{ flex: 1 }}>
+                    <label className={styles.label}>
+                      <i className="ti ti-door-enter" /> Giờ mở cửa
+                    </label>
+                    <div className={styles.inputWrap}>
+                      <i className="ti ti-clock" />
+                      <input
+                        name="openTime"
+                        type="time"
+                        value={restaurant.openTime}
+                        onChange={handleRestaurantChange}
+                        className={styles.input}
+                      />
+                    </div>
+                  </div>
+                  <div className={styles.timeSep}>–</div>
+                  <div className={styles.field} style={{ flex: 1 }}>
+                    <label className={styles.label}>
+                      <i className="ti ti-door-exit" /> Giờ đóng cửa
+                    </label>
+                    <div
+                      className={`${styles.inputWrap} ${errors.closeTime ? styles.inputErr : ""}`}
+                    >
+                      <i className="ti ti-clock" />
+                      <input
+                        name="closeTime"
+                        type="time"
+                        value={restaurant.closeTime}
+                        onChange={handleRestaurantChange}
+                        className={styles.input}
+                      />
+                    </div>
+                    {errors.closeTime && (
+                      <span className={styles.errMsg}>{errors.closeTime}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.grid2}>
+                  <Field label="Số điện thoại" icon="ti-phone">
+                    <input
+                      name="phone"
+                      type="tel"
+                      placeholder="0901 234 567"
+                      value={restaurant.phone}
+                      onChange={handleRestaurantChange}
+                      className={styles.input}
+                    />
+                  </Field>
+                  <Field label="Giá trung bình" icon="ti-cash">
+                    <input
+                      name="priceRange"
+                      type="text"
+                      placeholder="30.000 - 80.000đ"
+                      value={restaurant.priceRange}
+                      onChange={handleRestaurantChange}
+                      className={styles.input}
+                    />
+                  </Field>
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.label}>
+                    <i className="ti ti-stars" /> Tiện ích
+                  </label>
+                  <div className={styles.chipGrid}>
+                    {AMENITY_OPTIONS.map((a) => (
+                      <button
+                        key={a}
+                        type="button"
+                        className={`${styles.amenityChip} ${selectedAmenities.includes(a) ? styles.amenityChipActive : ""}`}
+                        onClick={() => toggleAmenity(a)}
+                      >
+                        {selectedAmenities.includes(a) && (
+                          <i className="ti ti-check" />
+                        )}{" "}
+                        {a}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <Field label="Mô tả ngắn về quán" icon="ti-file-description">
+                  <textarea
+                    name="description"
+                    rows={2}
+                    placeholder="Đặc điểm nổi bật, không khí, phong cách phục vụ..."
+                    value={restaurant.description}
+                    onChange={handleRestaurantChange}
+                    className={styles.textarea}
+                  />
+                </Field>
+
+                <Field label="Tags (phân cách bằng dấu phẩy)" icon="ti-tag">
+                  <input
+                    name="tags"
+                    type="text"
+                    placeholder="Ngon, Rẻ, Sạch, Đông khách"
+                    value={restaurant.tags}
+                    onChange={handleRestaurantChange}
+                    className={styles.input}
+                  />
+                </Field>
+              </form>
             </div>
-          </div>
 
-          {/* Footer */}
-          <div className={styles.dialogFooter}>
-            <button
-              type="button"
-              className={styles.btnCancel}
-              onClick={onClose}
-            >
-              Hủy
-            </button>
-            <button type="submit" className={styles.btnPost} disabled={loading}>
-              {loading ? (
-                <>
-                  <span className={styles.spinner} /> Đang đăng...
-                </>
-              ) : (
-                <>
-                  <i className="ti ti-send" aria-hidden="true" /> Đăng bài
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+            {/* Footer nằm NGOÀI body, button dùng form="step1-form" */}
+            <div className={styles.dialogFooter}>
+              <button
+                type="button"
+                className={styles.btnCancel}
+                onClick={onClose}
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                form="step1-form"
+                className={styles.btnNext}
+              >
+                Tiếp tục <i className="ti ti-arrow-right" />
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* ══════════ STEP 2 ══════════ */}
+        {step === 2 && (
+          <>
+            <div className={styles.body}>
+              <form id="step2-form" onSubmit={handleSubmit} noValidate>
+                <div className={styles.stepTitle}>
+                  <i className="ti ti-pencil" />
+                  <div>
+                    <h2>Bài đánh giá của bạn</h2>
+                    <p>
+                      Chia sẻ trải nghiệm tại <strong>{restaurant.name}</strong>
+                    </p>
+                  </div>
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.label}>
+                    <i className="ti ti-star" /> Đánh giá của bạn{" "}
+                    <span className={styles.required}>*</span>
+                  </label>
+                  <div className={styles.starRow}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        className={`${styles.starBtn} ${post.rating >= star ? styles.starActive : ""}`}
+                        onClick={() => {
+                          setPost((p) => ({ ...p, rating: star }));
+                          setErrors((e) => ({ ...e, rating: "" }));
+                        }}
+                      >
+                        <i className="ti ti-star-filled" />
+                      </button>
+                    ))}
+                    {post.rating > 0 && (
+                      <span className={styles.ratingLabel}>
+                        {
+                          ["", "Tệ", "Không tốt", "Ổn", "Tốt", "Xuất sắc"][
+                            post.rating
+                          ]
+                        }
+                      </span>
+                    )}
+                  </div>
+                  {errors.rating && (
+                    <span className={styles.errMsg}>{errors.rating}</span>
+                  )}
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.label}>
+                    <i className="ti ti-message-circle" /> Trải nghiệm của bạn{" "}
+                    <span className={styles.required}>*</span>
+                  </label>
+                  <textarea
+                    name="description"
+                    rows={4}
+                    placeholder="Món gì ngon nhất? Không khí ra sao? Dịch vụ thế nào? Có nên quay lại không?"
+                    value={post.description}
+                    onChange={handlePostChange}
+                    className={`${styles.textarea} ${errors.postDescription ? styles.inputErr : ""}`}
+                  />
+                  {errors.postDescription && (
+                    <span className={styles.errMsg}>
+                      {errors.postDescription}
+                    </span>
+                  )}
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.label}>
+                    <i className="ti ti-photo" /> Hình ảnh thực tế
+                    <span className={styles.labelNote}>(tối đa 5 ảnh)</span>
+                  </label>
+                  {post.images.length < 5 && (
+                    <div
+                      className={`${styles.dropZone} ${dragging ? styles.dropZoneActive : ""}`}
+                      onDrop={handleDrop}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setDragging(true);
+                      }}
+                      onDragLeave={() => setDragging(false)}
+                      onClick={() => fileInputRef.current?.click()}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && fileInputRef.current?.click()
+                      }
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        multiple
+                        className={styles.fileInput}
+                        onChange={(e) => processFiles(e.target.files)}
+                      />
+                      <div className={styles.dropIcon}>
+                        <i className="ti ti-cloud-upload" />
+                      </div>
+                      <p className={styles.dropText}>
+                        Kéo thả hoặc{" "}
+                        <span className={styles.dropLink}>chọn từ máy</span>
+                      </p>
+                      <p className={styles.dropHint}>
+                        JPG, PNG, WEBP — tối đa 5 ảnh
+                      </p>
+                    </div>
+                  )}
+                  {post.images.length > 0 && (
+                    <div className={styles.previewGrid}>
+                      {post.images.map((img, idx) => (
+                        <div key={img.id} className={styles.previewItem}>
+                          <img
+                            src={img.url}
+                            alt={`Ảnh ${idx + 1}`}
+                            className={styles.previewImg}
+                          />
+                          <div className={styles.previewOverlay}>
+                            <button
+                              type="button"
+                              className={styles.removeImgBtn}
+                              onClick={() => removeImage(img.id)}
+                            >
+                              <i className="ti ti-trash" />
+                            </button>
+                          </div>
+                          {idx === 0 && (
+                            <span className={styles.mainBadge}>Ảnh bìa</span>
+                          )}
+                        </div>
+                      ))}
+                      {post.images.length < 5 && (
+                        <button
+                          type="button"
+                          className={styles.addMoreBtn}
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <i className="ti ti-plus" />
+                          <span>Thêm</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  <p className={styles.imageCount}>
+                    {post.images.length}/5 ảnh
+                    {post.images.length > 0 && (
+                      <button
+                        type="button"
+                        className={styles.clearImgBtn}
+                        onClick={() => setPost((p) => ({ ...p, images: [] }))}
+                      >
+                        Xóa tất cả
+                      </button>
+                    )}
+                  </p>
+                </div>
+              </form>
+            </div>
+
+            <div className={styles.dialogFooter}>
+              <button
+                type="button"
+                className={styles.btnBack}
+                onClick={() => {
+                  setStep(1);
+                  setErrors({});
+                }}
+              >
+                <i className="ti ti-arrow-left" /> Quay lại
+              </button>
+              <button
+                type="submit"
+                form="step2-form"
+                className={styles.btnPost}
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className={styles.spinner} /> Đang đăng...
+                  </>
+                ) : (
+                  <>
+                    <i className="ti ti-send" /> Đăng bài
+                  </>
+                )}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </>
+  );
+}
+
+function Field({ label, required, icon, error, children }) {
+  return (
+    <div
+      className="fieldGroup"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 5,
+        marginBottom: 14,
+      }}
+    >
+      <label
+        style={{
+          fontSize: "0.75rem",
+          fontWeight: 700,
+          color: "#7a5030",
+          letterSpacing: "0.04em",
+          textTransform: "uppercase",
+          display: "flex",
+          alignItems: "center",
+          gap: 5,
+        }}
+      >
+        {icon && (
+          <i
+            className={`ti ${icon}`}
+            style={{ color: "#c4601a", fontSize: "0.9rem" }}
+          />
+        )}
+        {label}
+        {required && <span style={{ color: "#d44a1a", marginLeft: 2 }}>*</span>}
+      </label>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "10px 14px",
+          borderRadius: 10,
+          border: `1.5px solid ${error ? "#d44a1a" : "#e4d4b8"}`,
+          background: "#fffdf9",
+        }}
+      >
+        {children}
+      </div>
+      {error && (
+        <span
+          style={{
+            fontSize: "0.72rem",
+            color: "#d44a1a",
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <i className="ti ti-alert-circle" /> {error}
+        </span>
+      )}
+    </div>
   );
 }
