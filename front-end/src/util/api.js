@@ -61,6 +61,11 @@ const callCreatePostAPI = (restaurantId, description, images, rating) => {
   return axios.post(URL, data);
 };
 
+const callGeocodeAPI = (address, addressSub) => {
+  const URL = "/api/geocode";
+  return axios.post(URL, { address, addressSub });
+};
+
 export {
   callRegisterAPI,
   callFindUserByEmailAPI,
@@ -70,4 +75,5 @@ export {
   callChangePasswordAPI,
   callCreateRestaurantAPI,
   callCreatePostAPI,
+  callGeocodeAPI,
 };

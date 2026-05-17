@@ -223,7 +223,7 @@ export default function PostDialog({ open, onClose, onSubmit }) {
           .split(",")
           .map((t) => t.trim())
           .filter(Boolean),
-        images: post.images.slice(0, 1).map((img) => img.url),
+        images: post.images.map((img) => img.url),
         hours: hoursArr,
         location: location || { lat: null, lng: null },
         rating: 0,
@@ -253,11 +253,10 @@ export default function PostDialog({ open, onClose, onSubmit }) {
       }
 
       // Bước 2: Tạo post gắn với restaurant vừa tạo
-      const allImageUrls = post.images.map((img) => img.url); // tất cả ảnh cho post
       const postRes = await callCreatePostAPI(
         restaurantId,
         post.description,
-        allImageUrls,
+        post.images.slice(0, 1).map((img) => img.url),
         post.rating,
       );
 
