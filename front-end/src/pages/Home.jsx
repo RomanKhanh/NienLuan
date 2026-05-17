@@ -89,7 +89,7 @@ const FILTERS = [
 const PAGE_SIZE = 3;
 
 export default function Home() {
-  const { isAuthenticated, auth, setAuth } = useContext(AuthContext);
+  const { auth, setAuth } = useContext(AuthContext);
   console.log("Auth state in Home:", { auth });
   const navigate = useNavigate();
 
@@ -185,14 +185,15 @@ export default function Home() {
             </button>
           ))}
         </div>
-
-        <button
-          className={styles.btnNewPost}
-          onClick={() => setDialogOpen(true)}
-        >
-          <i className="ti ti-pencil-plus" aria-hidden="true" />
-          Đăng bài mới
-        </button>
+        {auth.isAuthenticated && (
+          <button
+            className={styles.btnNewPost}
+            onClick={() => setDialogOpen(true)}
+          >
+            <i className="ti ti-pencil-plus" aria-hidden="true" />
+            Đăng bài mới
+          </button>
+        )}
       </div>
 
       {/* ── FEED ── */}

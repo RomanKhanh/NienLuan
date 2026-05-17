@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "./PostDialog.module.css";
-import { callCreateRestaurantAPI, callCreatePostAPI } from "../../util/api";
+import {
+  callCreateRestaurantAPI,
+  callCreatePostAPI,
+  callGeocodeAPI,
+} from "../../util/api";
 
 const INIT_RESTAURANT = {
   name: "",
@@ -46,6 +50,8 @@ export default function PostDialog({ open, onClose, onSubmit }) {
   const [post, setPost] = useState(INIT_POST);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
+  const [location, setLocation] = useState(null); // { lat, lng }
   const [dragging, setDragging] = useState(false);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -59,6 +65,7 @@ export default function PostDialog({ open, onClose, onSubmit }) {
       setErrors({});
       setSelectedAmenities([]);
       setSelectedCategory("");
+      setLocation(null);
     }
   }, [open]);
 
@@ -71,6 +78,17 @@ export default function PostDialog({ open, onClose, onSubmit }) {
   }, [open, onClose]);
 
   if (!open) return null;
+
+  // Chuyển địa chỉ → tọa độ qua backend (Nominatim với normalize địa chỉ VN)
+  const geocodeAddress = async (address, addressSub) => {
+    try {
+      const res = await callGeocodeAPI(address, addressSub);
+      if (res?.EC === 0 && res.LOCATION) return res.LOCATION;
+      return null;
+    } catch {
+      return null;
+    }
+  };
 
   const handleRestaurantChange = (e) => {
     const { name, value } = e.target;
@@ -93,7 +111,7 @@ export default function PostDialog({ open, onClose, onSubmit }) {
     return errs;
   };
 
-  const handleNext = (e) => {
+  const handleNext = async (e) => {
     e.preventDefault();
     const errs = validateStep1();
     if (Object.keys(errs).length) {
@@ -101,6 +119,14 @@ export default function PostDialog({ open, onClose, onSubmit }) {
       return;
     }
     setErrors({});
+    // Geocode địa chỉ trước khi sang step 2
+    setGeocoding(true);
+    const coords = await geocodeAddress(
+      restaurant.address,
+      restaurant.addressSub,
+    );
+    setLocation(coords); // null nếu không tìm được, vẫn cho tiếp tục
+    setGeocoding(false);
     setStep(2);
   };
 
@@ -197,8 +223,9 @@ export default function PostDialog({ open, onClose, onSubmit }) {
           .split(",")
           .map((t) => t.trim())
           .filter(Boolean),
-        images: [],
+        images: post.images.slice(0, 1).map((img) => img.url),
         hours: hoursArr,
+        location: location || { lat: null, lng: null },
         rating: 0,
         reviewCount: 0,
       };
@@ -226,11 +253,11 @@ export default function PostDialog({ open, onClose, onSubmit }) {
       }
 
       // Bước 2: Tạo post gắn với restaurant vừa tạo
-      const imageUrls = post.images.map((img) => img.url);
+      const allImageUrls = post.images.map((img) => img.url); // tất cả ảnh cho post
       const postRes = await callCreatePostAPI(
         restaurantId,
         post.description,
-        imageUrls,
+        allImageUrls,
         post.rating,
       );
 
@@ -516,8 +543,17 @@ export default function PostDialog({ open, onClose, onSubmit }) {
                 type="submit"
                 form="step1-form"
                 className={styles.btnNext}
+                disabled={geocoding}
               >
-                Tiếp tục <i className="ti ti-arrow-right" />
+                {geocoding ? (
+                  <>
+                    <span className={styles.spinner} /> Đang xác định vị trí...
+                  </>
+                ) : (
+                  <>
+                    Tiếp tục <i className="ti ti-arrow-right" />
+                  </>
+                )}
               </button>
             </div>
           </>

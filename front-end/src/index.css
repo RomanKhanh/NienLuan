@@ -1,26 +1,36 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap');
-@import 'leaflet/dist/leaflet.css';
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap");
 
 :root {
-  --brand:       #B5731A;
-  --brand-light: #F5E6C8;
-  --brand-mid:   #D4943A;
-  --brand-dark:  #7A4A0A;
-  --bg-page:     #FBF5EC;
+  --brand: #b5731a;
+  --brand-light: #f5e6c8;
+  --brand-mid: #d4943a;
+  --brand-dark: #7a4a0a;
+  --bg-page: #fbf5ec;
   --radius-card: 16px;
-  --radius-md:   10px;
+  --radius-md: 10px;
   --shadow-card: 0 2px 12px rgba(122, 74, 10, 0.08);
   --border-card: 1px solid rgba(181, 115, 26, 0.2);
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
   background: var(--bg-page);
   color: #1a1a1a;
   line-height: 1.5;
 }
 
-button { font-family: inherit; cursor: pointer; }
-a { text-decoration: none; }
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+a {
+  text-decoration: none;
+}

@@ -5,7 +5,7 @@
   background: var(--bg-page);
 }
 
-/* Breadcrumb */
+/* ── Breadcrumb ── */
 .breadcrumb {
   background: var(--brand-dark);
   border-top: 0.5px solid rgba(255, 255, 255, 0.1);
@@ -18,11 +18,16 @@
 
 .bcItem {
   color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
   transition: color 0.2s;
 }
-.bcItem:hover { color: #fff; }
+.bcItem:hover {
+  color: #fff;
+}
 
-.bcSep { color: rgba(255, 255, 255, 0.35); }
+.bcSep {
+  color: rgba(255, 255, 255, 0.35);
+}
 
 .bcCurrent {
   color: #fff;
@@ -33,40 +38,30 @@
   white-space: nowrap;
 }
 
-/* ── Main 2-col layout ── */
+/* ── Main layout ── */
 .main {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 420px;
-  gap: 20px;
-  padding: 24px 28px;
-  align-items: stretch;   /* cả 2 cột cùng kéo dài bằng nhau */
+  /* cột trái: thông tin quán (cố định 400px), cột phải: comments (fill nốt) */
+  grid-template-columns: 400px 1fr;
+  grid-template-areas: "info comments";
+  gap: 24px;
+  padding: 28px;
+  align-items: start;
 }
 
-/* Cột trái: Map trên + Comments dưới */
-.leftCol {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.infoWrap {
+  grid-area: info;
+  /* sticky: card thông tin bám theo khi scroll comments dài */
+  position: sticky;
+  top: 20px;
 }
 
-/* Map card — bo góc */
-.mapCard {
-  background: #fff;
-  border: var(--border-card);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
-  min-height: 320px;
+.commentsWrap {
+  grid-area: comments;
 }
 
-/* Cột phải: flex column để card con fill hết chiều cao */
-.rightCol {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Not found */
+/* ── Not found ── */
 .notFound {
   flex: 1;
   display: flex;
@@ -81,19 +76,31 @@
 .notFound a {
   color: var(--brand);
   font-weight: 500;
+  text-decoration: none;
 }
 
 /* ── Responsive ── */
-@media (max-width: 960px) {
+@media (max-width: 900px) {
   .main {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "info"
+      "comments";
     padding: 16px;
     gap: 16px;
-    align-items: start;
+  }
+
+  .infoWrap {
+    position: static;
   }
 }
 
 @media (max-width: 600px) {
-  .breadcrumb { padding: 8px 1rem; }
-  .main       { padding: 12px; }
+  .breadcrumb {
+    padding: 8px 1rem;
+  }
+  .main {
+    padding: 12px;
+    gap: 12px;
+  }
 }
