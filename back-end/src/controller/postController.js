@@ -1,6 +1,7 @@
 const {
   createPostService,
   getPostByIDService,
+  getPostsService,
 } = require("../services/postService");
 
 const createPost = async (req, res) => {
@@ -32,7 +33,17 @@ const getPostByID = async (req, res) => {
   }
 };
 
+const getPosts = async (req, res) => {
+  try {
+    const posts = await getPostsService();
+    return res.status(200).json(posts);
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+};
+
 module.exports = {
   createPost,
   getPostByID,
+  getPosts,
 };

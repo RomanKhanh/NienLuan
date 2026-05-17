@@ -15,7 +15,11 @@ const {
   getRestaurantByID,
 } = require("../controller/restaurantController");
 
-const { createPost, getPostByID } = require("../controller/postController");
+const {
+  createPost,
+  getPostByID,
+  getPosts,
+} = require("../controller/postController");
 
 const apiRouter = express.Router();
 
@@ -37,5 +41,6 @@ apiRouter.get("/restaurant/:id", getRestaurantByID);
 //Post
 apiRouter.post("/create-post", createPost);
 apiRouter.get("/post/:id", getPostByID);
+apiRouter.get("/posts", getPosts);
 
 module.exports = apiRouter;

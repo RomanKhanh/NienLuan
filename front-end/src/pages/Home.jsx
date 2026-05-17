@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Header from "../components/layout/Header";
@@ -9,74 +9,7 @@ import PostDialog from "../components/post/PostDialog";
 import styles from "./Home.module.css";
 
 import { AuthContext } from "../context/auth.context";
-
-const MOCK_POSTS = [
-  {
-    id: 1,
-    restaurantId: "quan-ba-cam",
-    poster: { initials: "TL", name: "Trần Thị Lan", bg: "#F5E6C8" },
-    time: "2 giờ trước",
-    restaurantName: "Quán Bà Cẩm — Cơm Tấm & Lẩu Mắm",
-    address: "105 Trần Hưng Đạo, Ninh Kiều, Cần Thơ",
-    rating: 5,
-    likes: 128,
-    comments: 34,
-    emoji: "🍲",
-    imgBg: "linear-gradient(135deg,#F5E0B5,#E8C98A)",
-  },
-  {
-    id: 2,
-    restaurantId: "bun-bo-di-nam",
-    poster: { initials: "MH", name: "Minh Hoàng", bg: "#E8C98A" },
-    time: "5 giờ trước",
-    restaurantName: "Bún Bò Huế Dì Năm",
-    address: "23 Nguyễn Trãi, Bình Thủy, Cần Thơ",
-    rating: 4,
-    likes: 87,
-    comments: 21,
-    emoji: "🍜",
-    imgBg: "linear-gradient(135deg,#F0D4A0,#FAC775)",
-  },
-  {
-    id: 3,
-    restaurantId: "banh-xeo-muoi-xiem",
-    poster: { initials: "NA", name: "Ngọc Anh", bg: "#F0D4A0" },
-    time: "1 ngày trước",
-    restaurantName: "Bánh Xèo Mười Xiềm",
-    address: "78 Lý Tự Trọng, Ninh Kiều, Cần Thơ",
-    rating: 5,
-    likes: 214,
-    comments: 56,
-    emoji: "🥘",
-    imgBg: "linear-gradient(135deg,#E8C98A,#D4943A)",
-  },
-  {
-    id: 4,
-    restaurantId: "hu-tieu-tu-ky",
-    poster: { initials: "VK", name: "Văn Khoa", bg: "#F5E0B5" },
-    time: "2 ngày trước",
-    restaurantName: "Hủ Tiếu Nam Vang Tư Ký",
-    address: "12 Đinh Tiên Hoàng, Ninh Kiều, Cần Thơ",
-    rating: 4,
-    likes: 63,
-    comments: 18,
-    emoji: "🍝",
-    imgBg: "linear-gradient(135deg,#FAC775,#D4943A)",
-  },
-  {
-    id: 5,
-    restaurantId: "lau-thai-saigon",
-    poster: { initials: "PT", name: "Phương Thảo", bg: "#E8C98A" },
-    time: "3 ngày trước",
-    restaurantName: "Lẩu Thái Saigon Garden",
-    address: "56 Trần Phú, Cái Răng, Cần Thơ",
-    rating: 5,
-    likes: 189,
-    comments: 42,
-    emoji: "🫕",
-    imgBg: "linear-gradient(135deg,#F5E0B5,#B5731A)",
-  },
-];
+import { callFetchPostsAPI } from "../util/api";
 
 const FILTERS = [
   { key: "loai-mon", icon: "ti-tools-kitchen-2", label: "Loại món" },
@@ -89,6 +22,7 @@ const FILTERS = [
 const PAGE_SIZE = 3;
 
 export default function Home() {
+  const [posts, setPosts] = useState([]);
   const { auth, setAuth } = useContext(AuthContext);
   console.log("Auth state in Home:", { auth });
   const navigate = useNavigate();
@@ -99,17 +33,32 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const fetchPosts = async () => {
+    try {
+      const res = await callFetchPostsAPI();
+      if (res?.EC === 0) setPosts(res.POSTS);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
   const toggleFilter = (key) => {
     setActiveFilters((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
     );
   };
 
-  const filtered = MOCK_POSTS.filter(
-    (p) =>
-      p.restaurantName.toLowerCase().includes(search.toLowerCase()) ||
-      p.address.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = posts.filter((p) => {
+    const restaurantName = p.restaurantId?.name?.toLowerCase() || "";
+    const address = p.restaurantId?.address?.toLowerCase() || "";
+    const keyword = search.toLowerCase();
+
+    return restaurantName.includes(keyword) || address.includes(keyword);
+  });
 
   const visible = filtered.slice(0, page * PAGE_SIZE);
   const hasMore = visible.length < filtered.length;
@@ -122,9 +71,8 @@ export default function Home() {
     }, 600);
   };
 
-  const handlePostSubmit = (data) => {
-    // TODO: POST /api/posts — thêm bài mới vào feed
-    console.log("New post:", data);
+  const handlePostSubmit = () => {
+    fetchPosts();
   };
 
   return (

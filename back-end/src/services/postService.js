@@ -23,6 +23,26 @@ const createPostService = async (data) => {
   }
 };
 
+const getPostsService = async () => {
+  try {
+    const posts = await Post.find()
+      .populate("restaurantId")
+      .populate("userId")
+      .sort({ creatAt: -1 });
+    return {
+      EC: 0,
+      EM: "Get posts successfully",
+      POSTS: posts,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      EC: 1,
+      EM: error,
+    };
+  }
+};
+
 const getPostByIDService = async (id) => {
   try {
     const post = await Post.findById(id);
@@ -50,4 +70,5 @@ const getPostByIDService = async (id) => {
 module.exports = {
   createPostService,
   getPostByIDService,
+  getPostsService,
 };

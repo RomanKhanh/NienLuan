@@ -3,7 +3,7 @@ import styles from "./PostDialog.module.css";
 import {
   callCreateRestaurantAPI,
   callCreatePostAPI,
-  callGeocodeAPI,
+  callFetchPostsAPI,
 } from "../../util/api";
 
 const INIT_RESTAURANT = {
