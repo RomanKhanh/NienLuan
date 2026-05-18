@@ -31,7 +31,9 @@ const getRestaurantCommentsService = async (id) => {
       };
     const comments = await Comment.find({
       restaurantId: restaurant._id,
-    }).populate("userId");
+    })
+      .populate("userId")
+      .sort({ createdAt: -1 });
     return {
       EC: 0,
       EM: `Get comments successfully`,

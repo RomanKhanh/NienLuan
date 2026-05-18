@@ -78,7 +78,7 @@ const callFetchRestaurantAPI = async (id) => {
 
 const callCreateCommentAPI = async (restaurantId, newText, newRating) => {
   const URL = `/api/restaurant/${restaurantId}/create-comment`;
-  const data = { newText, newRating };
+  const data = { text: newText, rating: newRating };
   return axios.post(URL, data);
 };
 

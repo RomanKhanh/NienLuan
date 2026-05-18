@@ -3,6 +3,32 @@ import styles from "./Comments.module.css";
 import { notification } from "antd";
 import { callCreateCommentAPI, callFetchCommentsAPI } from "../../util/api";
 
+function Avatar({ user }) {
+  const [imgError, setImgError] = useState(false);
+
+  const initials = user?.name
+    ? user.name
+        .split(" ")
+        .slice(-2)
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+    : "?";
+
+  if (user?.avatar && !imgError) {
+    return (
+      <img
+        src={user.avatar}
+        alt={user.name}
+        className={styles.itemAvatarImg}
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+
+  return <div className={styles.itemAvatarFallback}>{initials}</div>;
+}
+
 export default function Comments({ restaurantId }) {
   const [comments, setComments] = useState([]);
   const [newText, setNewText] = useState("");
@@ -12,7 +38,6 @@ export default function Comments({ restaurantId }) {
   const fetchComments = async () => {
     try {
       const res = await callFetchCommentsAPI(restaurantId);
-      console.log(res);
       if (res.EC === 0) {
         setComments(res.COMMENTS);
       }
@@ -31,16 +56,17 @@ export default function Comments({ restaurantId }) {
       setSubmitting(true);
 
       const res = await callCreateCommentAPI(restaurantId, newText, newRating);
+      console.log(res);
       if (res.EC !== 0) {
         notification.error({
           message: "Tạo bình luận thất bại",
           description: "Đã có lỗi xảy ra, vui lòng thử lại",
         });
+        setSubmitting(false);
         return;
       }
 
       fetchComments();
-
       setNewText("");
       setNewRating(5);
       setSubmitting(false);
@@ -95,10 +121,12 @@ export default function Comments({ restaurantId }) {
       <div className={styles.list}>
         {comments.map((c) => (
           <div key={c._id} className={styles.item}>
-            <div className={styles.itemAvatar}>{c.userId.avatar}</div>
+            <div className={styles.itemAvatar}>
+              <Avatar user={c.userId} />
+            </div>
             <div className={styles.itemBody}>
               <div className={styles.itemTop}>
-                <span className={styles.itemName}>{c.userId.name}</span>
+                <span className={styles.itemName}>{c.userId?.name}</span>
                 <span className={styles.itemDate}>
                   {new Date(c.createdAt).toLocaleDateString("vi-VN")}
                 </span>

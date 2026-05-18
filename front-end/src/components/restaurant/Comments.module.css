@@ -17,7 +17,7 @@
 }
 
 .title {
-  font-family: 'Playfair Display', serif;
+  font-family: "Playfair Display", serif;
   font-size: 17px;
   color: var(--brand-dark);
 }
@@ -64,7 +64,9 @@
   color: #d4b896;
   padding: 0 1px;
   cursor: pointer;
-  transition: color 0.15s, transform 0.1s;
+  transition:
+    color 0.15s,
+    transform 0.1s;
   line-height: 1;
 }
 
@@ -82,7 +84,7 @@
   border: 1px solid rgba(181, 115, 26, 0.25);
   border-radius: 10px;
   padding: 10px 12px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
   font-size: 13px;
   color: #1a1a1a;
   background: #fff;
@@ -108,7 +110,10 @@
   background: var(--brand);
   color: #fff;
   border: none;
-  transition: background 0.2s, opacity 0.2s;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    opacity 0.2s;
 }
 
 .btnSubmit:hover:not(:disabled) {
@@ -140,7 +145,9 @@
 .list::-webkit-scrollbar {
   width: 4px;
 }
-.list::-webkit-scrollbar-track { background: transparent; }
+.list::-webkit-scrollbar-track {
+  background: transparent;
+}
 .list::-webkit-scrollbar-thumb {
   background: rgba(181, 115, 26, 0.2);
   border-radius: 2px;
@@ -153,16 +160,38 @@
   align-items: flex-start;
 }
 
+/* Avatar container — kích thước cố định */
 .itemAvatar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* Trường hợp có ảnh */
+.itemAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+/* Trường hợp không có ảnh — hiện chữ cái đầu */
+.itemAvatarFallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
   background: var(--brand-light);
+  border: 1px solid rgba(181, 115, 26, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-dark);
+  user-select: none;
 }
 
 .itemBody {
@@ -194,8 +223,14 @@
   gap: 1px;
 }
 
-.starFull  { color: var(--brand-mid); font-size: 13px; }
-.starEmpty { color: #ddd;             font-size: 13px; }
+.starFull {
+  color: var(--brand-mid);
+  font-size: 13px;
+}
+.starEmpty {
+  color: #ddd;
+  font-size: 13px;
+}
 
 .itemText {
   font-size: 13px;
