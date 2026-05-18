@@ -28,7 +28,7 @@ const getPostsService = async () => {
     const posts = await Post.find()
       .populate("restaurantId")
       .populate("userId")
-      .sort({ creatAt: -1 });
+      .sort({ createdAt: -1 });
     return {
       EC: 0,
       EM: "Get posts successfully",

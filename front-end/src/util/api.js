@@ -66,6 +66,27 @@ const callFetchPostsAPI = async () => {
   return axios.get(URL);
 };
 
+const callGetPostByIdAPI = async (id) => {
+  const URL = `/api/post/${id}`;
+  return axios.get(URL);
+};
+
+const callFetchRestaurantAPI = async (id) => {
+  const URL = `/api/restaurant/${id}`;
+  return axios.get(URL);
+};
+
+const callCreateCommentAPI = async (restaurantId, newText, newRating) => {
+  const URL = `/api/restaurant/${restaurantId}/create-comment`;
+  const data = { newText, newRating };
+  return axios.post(URL, data);
+};
+
+const callFetchCommentsAPI = async (restaurantId) => {
+  const URL = `/api/restaurant/${restaurantId}/comments`;
+  return axios.get(URL);
+};
+
 export {
   callRegisterAPI,
   callFindUserByEmailAPI,
@@ -76,4 +97,8 @@ export {
   callCreateRestaurantAPI,
   callCreatePostAPI,
   callFetchPostsAPI,
+  callFetchRestaurantAPI,
+  callGetPostByIdAPI,
+  callCreateCommentAPI,
+  callFetchCommentsAPI,
 };

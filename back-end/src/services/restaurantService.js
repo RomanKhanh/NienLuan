@@ -41,8 +41,8 @@ const getRestaurantByIDService = async (id) => {
       return {
         EC: 1,
         EM: "Restaurant not found",
-      };
-    }
+        };
+      }
     return {
       EC: 0,
       EM: "Find restaurant successfully",

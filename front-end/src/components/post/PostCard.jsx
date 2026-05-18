@@ -18,7 +18,15 @@ export default function PostCard({ post, onDetail }) {
       {/* Header: avatar + tên + thời gian */}
       <div className={styles.header}>
         <div className={styles.avatar} style={{ background: post.poster.bg }}>
-          {post.poster.initials}
+          {post.poster.avatar ? (
+            <img
+              src={post.poster.avatar}
+              alt={post.poster.name}
+              className={styles.avatarImg}
+            />
+          ) : (
+            post.poster.initials
+          )}
         </div>
         <div className={styles.posterInfo}>
           <span className={styles.posterName}>{post.poster.name}</span>
@@ -33,7 +41,11 @@ export default function PostCard({ post, onDetail }) {
 
       {/* Tên quán + địa điểm + sao */}
       <div className={styles.meta}>
-        <h2 className={styles.restName}>{post.restaurantName}</h2>
+        <div className={styles.metaRow}>
+          <h2 className={styles.restName}>{post.restaurantName} -</h2>
+          <p>{post.description}</p>
+        </div>
+
         <div className={styles.metaRow}>
           <span className={styles.metaItem}>
             <i className="ti ti-map-pin" aria-hidden="true" />

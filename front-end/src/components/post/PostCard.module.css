@@ -19,17 +19,24 @@
 }
 
 .avatar {
-  width: 38px;
-  height: 38px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
+  overflow: hidden;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--brand-dark);
-  flex-shrink: 0;
-  border: 1.5px solid rgba(181, 115, 26, 0.2);
+
+  background: #ff6b6b;
+  color: white;
+  font-weight: 700;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .posterInfo {
@@ -141,7 +148,7 @@
 .imgReal {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 

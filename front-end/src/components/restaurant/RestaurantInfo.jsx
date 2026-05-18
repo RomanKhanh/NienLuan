@@ -7,8 +7,8 @@ export default function RestaurantInfo({ restaurant }) {
   const {
     category,
     name,
-    rating = 0,
-    reviewCount = 0,
+    rating,
+    reviewCount,
     isOpen,
     tags = [],
     description,

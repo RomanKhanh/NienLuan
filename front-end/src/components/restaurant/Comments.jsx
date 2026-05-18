@@ -1,59 +1,53 @@
-import React, { useState } from 'react'
-import styles from './Comments.module.css'
-
-// Mock comments data
-const MOCK_COMMENTS = [
-  {
-    id: 1,
-    avatar: '👩',
-    name: 'Nguyễn Thị Lan',
-    date: '2 ngày trước',
-    rating: 5,
-    text: 'Lẩu mắm ở đây ngon tuyệt vời! Nước lẩu đậm đà, nhiều rau sạch. Sẽ quay lại lần sau.',
-  },
-  {
-    id: 2,
-    avatar: '👨',
-    name: 'Trần Văn Minh',
-    date: '1 tuần trước',
-    rating: 4,
-    text: 'Cơm tấm sườn nướng thơm lắm, giá cả hợp lý. Quán hơi đông vào buổi trưa nhưng phục vụ nhanh.',
-  },
-  {
-    id: 3,
-    avatar: '👩',
-    name: 'Lê Thị Hoa',
-    date: '2 tuần trước',
-    rating: 5,
-    text: 'Không gian mộc mạc, ấm cúng. Bánh xèo giòn rụm, ăn cùng rau sống rất ngon. Highly recommend!',
-  },
-]
+import React, { useState, useEffect } from "react";
+import styles from "./Comments.module.css";
+import { notification } from "antd";
+import { callCreateCommentAPI, callFetchCommentsAPI } from "../../util/api";
 
 export default function Comments({ restaurantId }) {
-  const [comments, setComments] = useState(MOCK_COMMENTS)
-  const [newText, setNewText]   = useState('')
-  const [newRating, setNewRating] = useState(5)
-  const [submitting, setSubmitting] = useState(false)
+  const [comments, setComments] = useState([]);
+  const [newText, setNewText] = useState("");
+  const [newRating, setNewRating] = useState(5);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = () => {
-    if (!newText.trim()) return
-    setSubmitting(true)
+  const fetchComments = async () => {
+    try {
+      const res = await callFetchCommentsAPI(restaurantId);
+      console.log(res);
+      if (res.EC === 0) {
+        setComments(res.COMMENTS);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-    // TODO: thay bằng POST /api/comments
-    setTimeout(() => {
-      setComments(prev => [{
-        id: Date.now(),
-        avatar: '🧑',
-        name: 'Bạn',
-        date: 'Vừa xong',
-        rating: newRating,
-        text: newText.trim(),
-      }, ...prev])
-      setNewText('')
-      setNewRating(5)
-      setSubmitting(false)
-    }, 400)
-  }
+  useEffect(() => {
+    fetchComments();
+  }, []);
+
+  const handleSubmit = async () => {
+    try {
+      if (!newText.trim()) return;
+      setSubmitting(true);
+
+      const res = await callCreateCommentAPI(restaurantId, newText, newRating);
+      if (res.EC !== 0) {
+        notification.error({
+          message: "Tạo bình luận thất bại",
+          description: "Đã có lỗi xảy ra, vui lòng thử lại",
+        });
+        return;
+      }
+
+      fetchComments();
+
+      setNewText("");
+      setNewRating(5);
+      setSubmitting(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className={styles.card}>
@@ -67,13 +61,15 @@ export default function Comments({ restaurantId }) {
         <div className={styles.formRating}>
           <span className={styles.formLabel}>Đánh giá của bạn:</span>
           <div className={styles.starPicker}>
-            {[1, 2, 3, 4, 5].map(s => (
+            {[1, 2, 3, 4, 5].map((s) => (
               <button
                 key={s}
-                className={`${styles.starBtn} ${s <= newRating ? styles.starActive : ''}`}
+                className={`${styles.starBtn} ${s <= newRating ? styles.starActive : ""}`}
                 onClick={() => setNewRating(s)}
                 aria-label={`${s} sao`}
-              >★</button>
+              >
+                ★
+              </button>
             ))}
           </div>
         </div>
@@ -81,7 +77,7 @@ export default function Comments({ restaurantId }) {
           className={styles.textarea}
           placeholder="Chia sẻ trải nghiệm của bạn về quán..."
           value={newText}
-          onChange={e => setNewText(e.target.value)}
+          onChange={(e) => setNewText(e.target.value)}
           rows={3}
         />
         <button
@@ -89,7 +85,7 @@ export default function Comments({ restaurantId }) {
           onClick={handleSubmit}
           disabled={!newText.trim() || submitting}
         >
-          {submitting ? 'Đang gửi...' : 'Gửi đánh giá'}
+          {submitting ? "Đang gửi..." : "Gửi đánh giá"}
         </button>
       </div>
 
@@ -97,17 +93,26 @@ export default function Comments({ restaurantId }) {
 
       {/* Danh sách comments */}
       <div className={styles.list}>
-        {comments.map(c => (
-          <div key={c.id} className={styles.item}>
-            <div className={styles.itemAvatar}>{c.avatar}</div>
+        {comments.map((c) => (
+          <div key={c._id} className={styles.item}>
+            <div className={styles.itemAvatar}>{c.userId.avatar}</div>
             <div className={styles.itemBody}>
               <div className={styles.itemTop}>
-                <span className={styles.itemName}>{c.name}</span>
-                <span className={styles.itemDate}>{c.date}</span>
+                <span className={styles.itemName}>{c.userId.name}</span>
+                <span className={styles.itemDate}>
+                  {new Date(c.createdAt).toLocaleDateString("vi-VN")}
+                </span>
               </div>
               <div className={styles.itemStars}>
-                {[1,2,3,4,5].map(s => (
-                  <span key={s} className={s <= c.rating ? styles.starFull : styles.starEmpty}>★</span>
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <span
+                    key={s}
+                    className={
+                      s <= c.rating ? styles.starFull : styles.starEmpty
+                    }
+                  >
+                    ★
+                  </span>
                 ))}
               </div>
               <p className={styles.itemText}>{c.text}</p>
@@ -116,5 +121,5 @@ export default function Comments({ restaurantId }) {
         ))}
       </div>
     </div>
-  )
+  );
 }

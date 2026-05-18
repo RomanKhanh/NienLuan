@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 
 const commentSchema = new mongoose.Schema(
   {
-    postId: {
+    restaurantId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Post",
+      ref: "Restaurant",
       required: true,
     },
 

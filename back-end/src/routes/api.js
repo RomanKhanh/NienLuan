@@ -21,6 +21,11 @@ const {
   getPosts,
 } = require("../controller/postController");
 
+const {
+  createComment,
+  getRestaurantComments,
+} = require("../controller/commentController");
+
 const apiRouter = express.Router();
 
 apiRouter.all("*", authMiddleware);
@@ -42,5 +47,9 @@ apiRouter.get("/restaurant/:id", getRestaurantByID);
 apiRouter.post("/create-post", createPost);
 apiRouter.get("/post/:id", getPostByID);
 apiRouter.get("/posts", getPosts);
+
+//Comment
+apiRouter.post("/restaurant/:restaurantId/create-comment", createComment);
+apiRouter.get("/restaurant/:restaurantId/comments", getRestaurantComments);
 
 module.exports = apiRouter;

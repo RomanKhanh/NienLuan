@@ -10,6 +10,7 @@ import styles from "./Home.module.css";
 
 import { AuthContext } from "../context/auth.context";
 import { callFetchPostsAPI } from "../util/api";
+import { Avatar } from "antd";
 
 const FILTERS = [
   { key: "loai-mon", icon: "ti-tools-kitchen-2", label: "Loại món" },
@@ -36,7 +37,50 @@ export default function Home() {
   const fetchPosts = async () => {
     try {
       const res = await callFetchPostsAPI();
-      if (res?.EC === 0) setPosts(res.POSTS);
+      if (res?.EC === 0) {
+        const formattedPosts = res.POSTS.map((p) => ({
+          id: p._id,
+
+          restaurantId: p.restaurantId?._id,
+
+          restaurantName: p.restaurantId?.name || "Unknown Restaurant",
+
+          description: p.description,
+
+          address: p.restaurantId?.address || "No address",
+
+          rating: p.rating || 0,
+
+          likes: p.likeCount || 0,
+
+          comments: p.commentCount || 0,
+
+          image: p.images?.[0] || "",
+
+          imgBg: "#eee",
+
+          emoji: "🍜",
+
+          time: new Date(p.createdAt).toLocaleDateString(),
+
+          poster: {
+            name: p.userId?.name || "Unknown User",
+
+            avatar: p.userId?.avatar,
+
+            initials:
+              p.userId?.name
+                ?.split(" ")
+                .map((w) => w[0])
+                .join("")
+                .slice(0, 2) || "U",
+
+            bg: "#ff6b6b",
+          },
+        }));
+
+        setPosts(formattedPosts);
+      }
     } catch (error) {
       console.log(error);
     }
