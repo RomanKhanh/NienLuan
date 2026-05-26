@@ -1,8 +1,12 @@
 import React, { useState } from "react";
 import styles from "./RestaurantInfo.module.css";
+import {
+  callAddFavoritePostAPI,
+  callRemoveFavoritePostAPI,
+} from "../../util/api";
 
-export default function RestaurantInfo({ restaurant }) {
-  const [saved, setSaved] = useState(false);
+export default function RestaurantInfo({ restaurant, post }) {
+  const [isFavorite, setFavorite] = useState(post?.isFavorite || false);
 
   const {
     category,
@@ -38,6 +42,38 @@ export default function RestaurantInfo({ restaurant }) {
       navigator.share({ title: name, url: window.location.href });
     } else {
       navigator.clipboard.writeText(window.location.href);
+    }
+  };
+
+  const handleFavorite = async () => {
+    try {
+      if (isFavorite) {
+        // Optimistic UI
+        setFavorite(false);
+        console.log("Removing favorite post:", post._id);
+
+        const res = await callRemoveFavoritePostAPI(post._id);
+        console.log("Favorite restaurant response:", res);
+
+        if (res.EC !== 0) {
+          // rollback nếu lỗi
+          setFavorite(true);
+        }
+      } else {
+        setFavorite(true);
+
+        const res = await callAddFavoritePostAPI(post._id);
+        console.log("Favorite restaurant response:", res);
+
+        if (res.EC !== 0) {
+          setFavorite(false);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+
+      // rollback
+      setFavorite((prev) => !prev);
     }
   };
 
@@ -117,15 +153,15 @@ export default function RestaurantInfo({ restaurant }) {
         {/* Action bar */}
         <div className={styles.actionBar}>
           <button
-            className={`${styles.btnSave} ${saved ? styles.btnSaved : ""}`}
-            onClick={() => setSaved((s) => !s)}
-            aria-pressed={saved}
+            className={`${styles.btnSave} ${isFavorite ? styles.btnfavorite : ""}`}
+            onClick={handleFavorite}
+            aria-pressed={isFavorite}
           >
             <i
-              className={saved ? "ti ti-heart-filled" : "ti ti-heart"}
+              className={isFavorite ? "ti ti-heart-filled" : "ti ti-heart"}
               aria-hidden="true"
             />
-            {saved ? "Đã lưu" : "Lưu quán"}
+            {isFavorite ? "Đã lưu" : "Lưu quán"}
           </button>
           {phone && (
             <a href={`tel:${phone}`} className={styles.btnCall}>

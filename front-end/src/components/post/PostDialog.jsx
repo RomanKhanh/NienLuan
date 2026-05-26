@@ -20,9 +20,12 @@ const INIT_RESTAURANT = {
   closeTime: "22:00",
 };
 
-const INIT_POST = { description: "", rating: 0, images: [] };
+const INIT_POST = { description: "", images: [] };
 
 const CATEGORIES = [
+  "Nhà hàng Nhật",
+  "Nhà hàng Hàn quốc",
+  "Nhà hàng Âu",
   "Cơm tấm",
   "Phở",
   "Bún bò",
@@ -41,7 +44,8 @@ const AMENITY_OPTIONS = [
   "Chỗ đậu xe",
   "Ship tận nơi",
   "Phòng riêng",
-  "Karaoke",
+  "Khu vui chơi trẻ em",
+  "Tổ chức tiệc",
 ];
 
 export default function PostDialog({ open, onClose, onSubmit }) {
@@ -156,7 +160,6 @@ export default function PostDialog({ open, onClose, onSubmit }) {
     const errs = {};
     if (!post.description.trim())
       errs.postDescription = "Vui lòng mô tả trải nghiệm của bạn.";
-    if (!post.rating) errs.rating = "Vui lòng chọn số sao.";
     return errs;
   };
 
@@ -234,7 +237,6 @@ export default function PostDialog({ open, onClose, onSubmit }) {
         restaurantId,
         post.description,
         post.images.slice(0, 1).map((img) => img.url),
-        post.rating,
       );
 
       if (!postRes || postRes.EC !== 0) {
@@ -482,7 +484,7 @@ export default function PostDialog({ open, onClose, onSubmit }) {
                   </div>
                 </div>
 
-                <Field label="Mô tả ngắn về quán" icon="ti-file-description">
+                <Field label="Mô tả về quán" icon="ti-file-description">
                   <textarea
                     name="description"
                     rows={2}
@@ -536,49 +538,15 @@ export default function PostDialog({ open, onClose, onSubmit }) {
                   <div>
                     <h2>Bài đánh giá của bạn</h2>
                     <p>
-                      Chia sẻ trải nghiệm tại <strong>{restaurant.name}</strong>
+                      Mô tả ngắn gọn về <strong>{restaurant.name}</strong>
                     </p>
                   </div>
                 </div>
 
                 <div className={styles.field}>
                   <label className={styles.label}>
-                    <i className="ti ti-star" /> Đánh giá của bạn{" "}
-                    <span className={styles.required}>*</span>
-                  </label>
-                  <div className={styles.starRow}>
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        className={`${styles.starBtn} ${post.rating >= star ? styles.starActive : ""}`}
-                        onClick={() => {
-                          setPost((p) => ({ ...p, rating: star }));
-                          setErrors((e) => ({ ...e, rating: "" }));
-                        }}
-                      >
-                        <i className="ti ti-star-filled" />
-                      </button>
-                    ))}
-                    {post.rating > 0 && (
-                      <span className={styles.ratingLabel}>
-                        {
-                          ["", "Tệ", "Không tốt", "Ổn", "Tốt", "Xuất sắc"][
-                            post.rating
-                          ]
-                        }
-                      </span>
-                    )}
-                  </div>
-                  {errors.rating && (
-                    <span className={styles.errMsg}>{errors.rating}</span>
-                  )}
-                </div>
-
-                <div className={styles.field}>
-                  <label className={styles.label}>
-                    <i className="ti ti-message-circle" /> Trải nghiệm của bạn{" "}
-                    <span className={styles.required}>*</span>
+                    <i className="ti ti-message-circle" /> Mô tả ngắn về quán ăn
+                    của bạn <span className={styles.required}>*</span>
                   </label>
                   <textarea
                     name="description"
@@ -598,7 +566,9 @@ export default function PostDialog({ open, onClose, onSubmit }) {
                 <div className={styles.field}>
                   <label className={styles.label}>
                     <i className="ti ti-photo" /> Hình ảnh thực tế
-                    <span className={styles.labelNote}>(tối đa 5 ảnh)</span>
+                    <span className={styles.labelNote}>
+                      (tối đa 5 ảnh, khuyến khích nên để đủ 5 ảnh)
+                    </span>
                   </label>
                   {post.images.length < 5 && (
                     <div

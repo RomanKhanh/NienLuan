@@ -42,12 +42,11 @@
 .main {
   flex: 1;
   display: grid;
-  /* cột trái: thông tin quán (cố định 400px), cột phải: comments (fill nốt) */
   grid-template-columns: 400px 1fr;
   grid-template-areas: "info comments";
   gap: 24px;
   padding: 28px;
-  align-items: start;
+  align-items: stretch; /* ← đổi từ start → stretch */
 }
 
 .infoWrap {
@@ -59,6 +58,8 @@
 
 .commentsWrap {
   grid-area: comments;
+  display: flex; /* ← thêm */
+  flex-direction: column; /* ← thêm */
 }
 
 /* ── Not found ── */

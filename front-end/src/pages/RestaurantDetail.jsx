@@ -6,17 +6,27 @@ import RestaurantInfo from "../components/restaurant/RestaurantInfo";
 import Comments from "../components/restaurant/Comments";
 import styles from "./RestaurantDetail.module.css";
 import { callFetchRestaurantAPI } from "../util/api";
+import { callGetPostByIdAPI } from "../util/api";
 
 export default function RestaurantDetail() {
-  const { id } = useParams();
+  const { postId } = useParams();
   const [restaurant, setRestaurant] = useState(null);
+  const [post, setPost] = useState(null);
   const fetchRestaurant = async () => {
     try {
-      const res = await callFetchRestaurantAPI(id);
-      if (res.EC === 0) {
-        setRestaurant(res.RESTAURANT);
+      const postRes = await callGetPostByIdAPI(postId);
+
+      if (postRes.EC === 0) {
+        setPost(postRes.POST);
+
+        const restaurantId = postRes.POST.restaurantId;
+
+        const res = await callFetchRestaurantAPI(restaurantId);
+
+        if (res.EC === 0) {
+          setRestaurant(res.RESTAURANT);
+        }
       }
-      console.log(res);
     } catch (error) {
       console.log(error);
     }
@@ -24,7 +34,7 @@ export default function RestaurantDetail() {
 
   useEffect(() => {
     fetchRestaurant();
-  }, [id]);
+  }, [postId]);
 
   if (!restaurant) {
     return (
@@ -69,7 +79,7 @@ export default function RestaurantDetail() {
 
       <main className={styles.main}>
         <div className={styles.infoWrap}>
-          <RestaurantInfo restaurant={restaurant} />
+          <RestaurantInfo restaurant={restaurant} post={post} />
         </div>
         <div className={styles.commentsWrap}>
           <Comments restaurantId={restaurant._id} />

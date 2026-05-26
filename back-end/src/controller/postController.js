@@ -25,7 +25,8 @@ const createPost = async (req, res) => {
 const getPostByID = async (req, res) => {
   try {
     const id = req.params.id;
-    const post = await getPostByIDService(id);
+    const userId = req.user._id || req.user.id;
+    const post = await getPostByIDService(id, userId);
     return res.status(200).json(post);
   } catch (error) {
     console.log("Error: ", error);
@@ -35,7 +36,7 @@ const getPostByID = async (req, res) => {
 
 const getPosts = async (req, res) => {
   try {
-    const posts = await getPostsService();
+    const posts = await getPostsService(req.user._id || req.user.id);
     return res.status(200).json(posts);
   } catch (error) {
     return res.status(500).json(error);

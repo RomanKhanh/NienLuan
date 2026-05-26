@@ -49,11 +49,13 @@ export default function Home() {
 
           address: p.restaurantId?.address || "No address",
 
-          rating: p.rating || 0,
+          restaurantRating: p.restaurantId?.rating || 0,
 
-          likes: p.likeCount || 0,
+          likeCount: p.likeCount || 0,
 
-          comments: p.commentCount || 0,
+          isLiked: p.isLiked || false,
+
+          comments: p.restaurantId?.reviewCount || 0,
 
           image: p.images?.[0] || "",
 
@@ -201,7 +203,7 @@ export default function Home() {
           <PostCard
             key={post.id}
             post={post}
-            onDetail={() => navigate(`/restaurant/${post.restaurantId}`)}
+            onDetail={() => navigate(`/post/${post.id}`)}
           />
         ))}
 

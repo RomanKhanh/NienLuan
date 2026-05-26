@@ -32,20 +32,69 @@ const commentSchema = new mongoose.Schema(
   },
 );
 
-// Index để lấy comment của một bài post
-commentSchema.index({ postId: 1, createdAt: -1 });
+// Index để lấy comment mới nhất của restaurant
+commentSchema.index({ restaurantId: 1, createdAt: -1 });
 
-// Sau khi lưu comment → tự động cập nhật commentCount trong Post
+// Sau khi tạo comment
 commentSchema.post("save", async function () {
-  const Post = mongoose.model("Post");
-  await Post.findByIdAndUpdate(this.postId, { $inc: { commentCount: 1 } });
+  const Restaurant = mongoose.model("Restaurant");
+
+  // Tính lại rating trung bình
+  const stats = await mongoose.model("Comment").aggregate([
+    {
+      $match: {
+        restaurantId: this.restaurantId,
+      },
+    },
+    {
+      $group: {
+        _id: "$restaurantId",
+        avgRating: { $avg: "$rating" },
+        reviewCount: { $sum: 1 },
+      },
+    },
+  ]);
+
+  if (stats.length > 0) {
+    await Restaurant.findByIdAndUpdate(this.restaurantId, {
+      rating: stats[0].avgRating,
+      reviewCount: stats[0].reviewCount,
+    });
+  }
 });
 
-// Sau khi xoá comment → giảm commentCount
+// Sau khi xoá comment
 commentSchema.post("findOneAndDelete", async function (doc) {
-  if (doc) {
-    const Post = mongoose.model("Post");
-    await Post.findByIdAndUpdate(doc.postId, { $inc: { commentCount: -1 } });
+  if (!doc) return;
+
+  const Restaurant = mongoose.model("Restaurant");
+
+  const stats = await mongoose.model("Comment").aggregate([
+    {
+      $match: {
+        restaurantId: doc.restaurantId,
+      },
+    },
+    {
+      $group: {
+        _id: "$restaurantId",
+        avgRating: { $avg: "$rating" },
+        reviewCount: { $sum: 1 },
+      },
+    },
+  ]);
+
+  if (stats.length > 0) {
+    await Restaurant.findByIdAndUpdate(doc.restaurantId, {
+      rating: stats[0].avgRating,
+      reviewCount: stats[0].reviewCount,
+    });
+  } else {
+    // Không còn review nào
+    await Restaurant.findByIdAndUpdate(doc.restaurantId, {
+      rating: 0,
+      reviewCount: 0,
+    });
   }
 });
 

@@ -19,22 +19,8 @@ const likeSchema = new mongoose.Schema(
   },
 );
 
-// Mỗi user chỉ like một post 1 lần
+// mỗi user chỉ like 1 lần/post
 likeSchema.index({ userId: 1, postId: 1 }, { unique: true });
-
-// Sau khi like → tăng likeCount trong Post
-likeSchema.post("save", async function () {
-  const Post = mongoose.model("Post");
-  await Post.findByIdAndUpdate(this.postId, { $inc: { likeCount: 1 } });
-});
-
-// Sau khi unlike (xoá) → giảm likeCount
-likeSchema.post("findOneAndDelete", async function (doc) {
-  if (doc) {
-    const Post = mongoose.model("Post");
-    await Post.findByIdAndUpdate(doc.postId, { $inc: { likeCount: -1 } });
-  }
-});
 
 const Like = mongoose.model("Like", likeSchema);
 

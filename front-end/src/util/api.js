@@ -87,6 +87,30 @@ const callFetchCommentsAPI = async (restaurantId) => {
   return axios.get(URL);
 };
 
+const callLikeAPI = async (postId) => {
+  const URL = `/api/post/${postId}/like`;
+  return axios.post(URL);
+};
+
+const callUnlikeAPI = async (postId) => {
+  const URL = `/api/post/${postId}/unlike`;
+  return axios.post(URL);
+};
+
+const callAddFavoritePostAPI = async (postId) => {
+  const URL = `/api/post/${postId}/favorite`;
+  return axios.post(URL);
+};
+
+const callRemoveFavoritePostAPI = async (postId) => {
+  const URL = `/api/post/${postId}/unfavorite`;
+  return axios.post(URL);
+};
+
+const callGetFavoritePostsAPI = async () => {
+  const URL = "/api/favorites";
+  return axios.get(URL);
+};
 export {
   callRegisterAPI,
   callFindUserByEmailAPI,
@@ -101,4 +125,9 @@ export {
   callGetPostByIdAPI,
   callCreateCommentAPI,
   callFetchCommentsAPI,
+  callLikeAPI,
+  callUnlikeAPI,
+  callAddFavoritePostAPI,
+  callRemoveFavoritePostAPI,
+  callGetFavoritePostsAPI,
 };

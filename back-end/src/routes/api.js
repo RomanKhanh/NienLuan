@@ -26,6 +26,14 @@ const {
   getRestaurantComments,
 } = require("../controller/commentController");
 
+const { likePost, unlikePost } = require("../controller/likeController.js");
+
+const {
+  addFavorite,
+  removeFavorite,
+  getFavoritesByUserId,
+} = require("../controller/favoriteController.js");
+
 const apiRouter = express.Router();
 
 apiRouter.all("*", authMiddleware);
@@ -51,5 +59,14 @@ apiRouter.get("/posts", getPosts);
 //Comment
 apiRouter.post("/restaurant/:restaurantId/create-comment", createComment);
 apiRouter.get("/restaurant/:restaurantId/comments", getRestaurantComments);
+
+//Like
+apiRouter.post("/post/:postId/like", likePost);
+apiRouter.post("/post/:postId/unlike", unlikePost);
+
+//Favorite
+apiRouter.post("/post/:postId/favorite", addFavorite);
+apiRouter.post("/post/:postId/unfavorite", removeFavorite);
+apiRouter.get("/favorites", getFavoritesByUserId);
 
 module.exports = apiRouter;

@@ -25,21 +25,13 @@ const postSchema = new mongoose.Schema(
       default: [],
     }, // Mảng URL ảnh (tối đa 5 như frontend)
 
-    rating: {
-      type: Number,
-      required: true,
-      min: 1,
-      max: 5,
-    }, // Rating của bài post này
-
     // Cached counters — cập nhật khi có like/comment mới
     likeCount: {
       type: Number,
       default: 0,
       min: 0,
     },
-
-    commentCount: {
+    favoriteCount: {
       type: Number,
       default: 0,
       min: 0,
@@ -50,13 +42,20 @@ const postSchema = new mongoose.Schema(
   },
 );
 
+postSchema.virtual("likes", {
+  ref: "Like",
+  localField: "_id",
+  foreignField: "postId",
+});
+
 // Index để lấy feed nhanh (sort theo mới nhất)
 postSchema.index({ createdAt: -1 });
 // Index để lấy bài đăng theo quán
 postSchema.index({ restaurantId: 1, createdAt: -1 });
 // Index để lấy bài đăng của user
 postSchema.index({ userId: 1, createdAt: -1 });
-
+// Index để lấy bài đăng được yêu thích nhiều nhất
+postSchema.index({ likeCount: -1, createdAt: -1 });
 const Post = mongoose.model("Post", postSchema);
 
 module.exports = Post;

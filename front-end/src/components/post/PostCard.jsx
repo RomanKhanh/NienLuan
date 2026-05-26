@@ -1,13 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { callLikeAPI, callUnlikeAPI } from "../../util/api";
 import styles from "./PostCard.module.css";
 
 export default function PostCard({ post, onDetail }) {
   const [liked, setLiked] = useState(false);
-  const [likes, setLikes] = useState(post.likes);
+  const [likes, setLikes] = useState(0);
 
-  const toggleLike = () => {
-    setLiked((l) => !l);
-    setLikes((n) => (liked ? n - 1 : n + 1));
+  useEffect(() => {
+    setLiked(post.isLiked);
+    setLikes(post.likeCount);
+  }, [post]);
+
+  const toggleLike = async () => {
+    try {
+      if (liked) {
+        // Optimistic UI
+        setLiked(false);
+        setLikes((prev) => prev - 1);
+
+        const res = await callUnlikeAPI(post.id);
+        console.log("Unlike response:", res);
+
+        if (res.EC !== 0) {
+          // rollback nếu lỗi
+          setLiked(true);
+          setLikes((prev) => prev + 1);
+        }
+      } else {
+        setLiked(true);
+        setLikes((prev) => prev + 1);
+
+        const res = await callLikeAPI(post.id);
+        console.log("Like response:", res);
+
+        if (res.EC !== 0) {
+          setLiked(false);
+          setLikes((prev) => prev - 1);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+
+      // rollback
+      setLiked((prev) => !prev);
+      setLikes((prev) => (liked ? prev + 1 : prev - 1));
+    }
   };
 
   const fullStars = Math.floor(post.rating);
@@ -52,19 +89,30 @@ export default function PostCard({ post, onDetail }) {
             {post.address}
           </span>
           <span className={styles.metaItem}>
-            <span className={styles.stars} aria-label={`${post.rating} sao`}>
-              {Array.from({ length: fullStars }).map((_, i) => (
+            <span
+              className={styles.stars}
+              aria-label={`${post.restaurantRating || 0} sao`}
+            >
+              {Array.from({
+                length: Math.round(post.restaurantRating || 0),
+              }).map((_, i) => (
                 <span key={`f${i}`} className={styles.starF}>
                   ★
                 </span>
               ))}
-              {Array.from({ length: emptyStars }).map((_, i) => (
+
+              {Array.from({
+                length: 5 - Math.round(post.restaurantRating || 0),
+              }).map((_, i) => (
                 <span key={`e${i}`} className={styles.starE}>
                   ★
                 </span>
               ))}
             </span>
-            <span className={styles.ratingVal}>{post.rating.toFixed(1)}</span>
+
+            <span className={styles.ratingVal}>
+              {(post.restaurantRating || 0).toFixed(1)}
+            </span>
           </span>
         </div>
       </div>

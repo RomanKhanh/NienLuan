@@ -69,7 +69,7 @@ export default function App() {
       <Route path="/search" element={<Search />} />
       <Route path="/favorites" element={<Favorites />} />
       <Route path="/profile" element={<Profile />} />
-      <Route path="/restaurant/:id" element={<RestaurantDetail />} />
+      <Route path="/post/:postId" element={<RestaurantDetail />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
     </Routes>
