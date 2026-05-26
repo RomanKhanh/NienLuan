@@ -1,23 +1,25 @@
 const { Favorite, Post } = require("../models");
+const { createNotification } = require("./notificationService");
 
-const addFavoriteService = async (userId, postId) => {
+const addFavoriteService = async (userId, postId, io) => {
   try {
-    // kiểm tra đã thêm vào yêu thích chưa
-    const existingFavorite = await Favorite.findOne({
-      userId,
-      postId,
-    });
+    const existingFavorite = await Favorite.findOne({ userId, postId });
     if (existingFavorite) {
-      return {
-        EC: 1,
-        EM: "You have already added this post to favorites",
-      };
+      return { EC: 1, EM: "You have already added this post to favorites" };
     }
-    // tạo yêu thích
-    const newFavorite = await Favorite.create({
-      userId,
-      postId,
-    });
+
+    const newFavorite = await Favorite.create({ userId, postId });
+
+    // Gửi notification cho chủ bài đăng
+    const post = await Post.findById(postId);
+    if (post) {
+      await createNotification(io, {
+        recipientId: post.userId,
+        senderId: userId,
+        type: "favorite",
+        postId,
+      });
+    }
 
     return {
       EC: 0,
@@ -26,36 +28,20 @@ const addFavoriteService = async (userId, postId) => {
     };
   } catch (error) {
     console.log(error);
-    return {
-      EC: 2,
-      EM: error.message,
-    };
+    return { EC: 2, EM: error.message };
   }
 };
 
 const removeFavoriteService = async (userId, postId) => {
   try {
-    // tìm và xoá yêu thích
-    const deletedFavorite = await Favorite.findOneAndDelete({
-      userId,
-      postId,
-    });
+    const deletedFavorite = await Favorite.findOneAndDelete({ userId, postId });
     if (!deletedFavorite) {
-      return {
-        EC: 1,
-        EM: "You have not added this post to favorites",
-      };
+      return { EC: 1, EM: "You have not added this post to favorites" };
     }
-    return {
-      EC: 0,
-      EM: "Post removed from favorites successfully",
-    };
+    return { EC: 0, EM: "Post removed from favorites successfully" };
   } catch (error) {
     console.log(error);
-    return {
-      EC: 2,
-      EM: error.message,
-    };
+    return { EC: 2, EM: error.message };
   }
 };
 
@@ -63,16 +49,8 @@ const getFavoritesByUserIdService = async (userId) => {
   try {
     const favorites = await Favorite.find({ userId }).populate({
       path: "postId",
-      populate: [
-        {
-          path: "restaurantId",
-        },
-        {
-          path: "userId",
-        },
-      ],
+      populate: [{ path: "restaurantId" }, { path: "userId" }],
     });
-
     return {
       EC: 0,
       EM: "Get favorites successfully",
@@ -80,11 +58,7 @@ const getFavoritesByUserIdService = async (userId) => {
     };
   } catch (error) {
     console.log(error);
-
-    return {
-      EC: 1,
-      EM: error.message,
-    };
+    return { EC: 1, EM: error.message };
   }
 };
 

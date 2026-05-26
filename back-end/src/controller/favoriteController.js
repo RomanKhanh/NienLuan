@@ -8,7 +8,8 @@ const addFavorite = async (req, res) => {
   try {
     const postId = req.params.postId;
     const userId = req.user._id;
-    const result = await addFavoriteService(userId, postId);
+    const io = req.app.get("io");
+    const result = await addFavoriteService(userId, postId, io);
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).json(error);
@@ -36,8 +37,4 @@ const getFavoritesByUserId = async (req, res) => {
   }
 };
 
-module.exports = {
-  addFavorite,
-  removeFavorite,
-  getFavoritesByUserId,
-};
+module.exports = { addFavorite, removeFavorite, getFavoritesByUserId };

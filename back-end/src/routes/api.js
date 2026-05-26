@@ -9,36 +9,36 @@ const {
   updateProfile,
   changePassword,
 } = require("../controller/userController");
-
 const {
   createRestaurant,
   getRestaurantByID,
 } = require("../controller/restaurantController");
-
 const {
   createPost,
   getPostByID,
   getPosts,
 } = require("../controller/postController");
-
 const {
   createComment,
   getRestaurantComments,
 } = require("../controller/commentController");
-
 const { likePost, unlikePost } = require("../controller/likeController.js");
-
 const {
   addFavorite,
   removeFavorite,
   getFavoritesByUserId,
 } = require("../controller/favoriteController.js");
+const {
+  getNotifications,
+  markAllRead,
+  deleteNotification,
+  deleteAllNotifications,
+} = require("../controller/notificationController");
 
 const apiRouter = express.Router();
-
 apiRouter.all("*", authMiddleware);
 
-//User
+// User
 apiRouter.post("/register", createUser);
 apiRouter.post("/login", loginUser);
 apiRouter.post("/google-login", googleLogin);
@@ -47,26 +47,32 @@ apiRouter.get("/account", getAccountInfo);
 apiRouter.patch("/update-profile", updateProfile);
 apiRouter.patch("/change-password", changePassword);
 
-//Restaurant
+// Restaurant
 apiRouter.post("/create-restaurant", createRestaurant);
 apiRouter.get("/restaurant/:id", getRestaurantByID);
 
-//Post
+// Post
 apiRouter.post("/create-post", createPost);
 apiRouter.get("/post/:id", getPostByID);
 apiRouter.get("/posts", getPosts);
 
-//Comment
+// Comment
 apiRouter.post("/restaurant/:restaurantId/create-comment", createComment);
 apiRouter.get("/restaurant/:restaurantId/comments", getRestaurantComments);
 
-//Like
+// Like
 apiRouter.post("/post/:postId/like", likePost);
 apiRouter.post("/post/:postId/unlike", unlikePost);
 
-//Favorite
+// Favorite
 apiRouter.post("/post/:postId/favorite", addFavorite);
 apiRouter.post("/post/:postId/unfavorite", removeFavorite);
 apiRouter.get("/favorites", getFavoritesByUserId);
+
+// Notification
+apiRouter.get("/notifications", getNotifications);
+apiRouter.patch("/notifications/read-all", markAllRead);
+apiRouter.delete("/notifications/:id", deleteNotification);
+apiRouter.delete("/notifications", deleteAllNotifications);
 
 module.exports = apiRouter;

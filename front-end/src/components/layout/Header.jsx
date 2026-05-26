@@ -2,76 +2,24 @@ import React, { useState, useContext, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import { AuthContext } from "../../context/auth.context";
-
-const MOCK_NOTIFICATIONS = [
-  {
-    id: 1,
-    type: "like",
-    user: "Trần Thị Lan",
-    userInitials: "TL",
-    userBg: "#F5E6C8",
-    message: "đã thả tim bài đăng của bạn",
-    target: "Quán Bà Cẩm — Cơm Tấm & Lẩu Mắm",
-    time: "2 phút trước",
-    read: false,
-  },
-  {
-    id: 2,
-    type: "comment",
-    user: "Minh Hoàng",
-    userInitials: "MH",
-    userBg: "#E8C98A",
-    message: "đã bình luận vào bài đăng của bạn",
-    target: "Bánh Xèo Mười Xiềm",
-    time: "15 phút trước",
-    read: false,
-  },
-  {
-    id: 3,
-    type: "like",
-    user: "Ngọc Anh",
-    userInitials: "NA",
-    userBg: "#F0D4A0",
-    message: "đã thả tim bài đăng của bạn",
-    target: "Bún Bò Huế Dì Năm",
-    time: "1 giờ trước",
-    read: false,
-  },
-  {
-    id: 4,
-    type: "comment",
-    user: "Văn Khoa",
-    userInitials: "VK",
-    userBg: "#F5E0B5",
-    message: "đã bình luận vào bài đăng của bạn",
-    target: "Quán Bà Cẩm — Cơm Tấm & Lẩu Mắm",
-    time: "3 giờ trước",
-    read: true,
-  },
-  {
-    id: 5,
-    type: "like",
-    user: "Phương Thảo",
-    userInitials: "PT",
-    userBg: "#E8C98A",
-    message: "đã thả tim bài đăng của bạn",
-    target: "Hủ Tiếu Nam Vang Tư Ký",
-    time: "5 giờ trước",
-    read: true,
-  },
-];
+import { SocketContext, timeAgo } from "../../context/socket.context";
 
 export default function Header() {
   const navigate = useNavigate();
   const [notiOpen, setNotiOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
   const { auth, setAuth } = useContext(AuthContext);
+  const {
+    notifications,
+    unreadCount,
+    loading,
+    markAllRead,
+    deleteNotification,
+    deleteAllNotifications,
+  } = useContext(SocketContext);
 
   const notiRef = useRef(null);
   const avatarRef = useRef(null);
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const getInitials = (name = "") =>
     name
@@ -81,6 +29,7 @@ export default function Header() {
       .join("")
       .toUpperCase();
 
+  // Đóng dropdown khi click ra ngoài
   useEffect(() => {
     const handler = (e) => {
       if (notiRef.current && !notiRef.current.contains(e.target))
@@ -91,19 +40,6 @@ export default function Header() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-
-  const markAllRead = () =>
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-
-  const markRead = (id) =>
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    );
-
-  const deleteNotification = (e, id) => {
-    e.stopPropagation();
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  };
 
   const handleLogout = () => {
     setAvatarOpen(false);
@@ -116,6 +52,39 @@ export default function Header() {
     setAvatarOpen(false);
     navigate("/profile");
   };
+
+  // Lấy icon và text label theo type
+  const getTypeInfo = (type) => {
+    if (type === "like")
+      return {
+        icon: "ti-heart",
+        cls: styles.iconLike,
+        label: "đã thả tim bài đăng của bạn",
+      };
+    if (type === "favorite")
+      return {
+        icon: "ti-bookmark",
+        cls: styles.iconFavorite,
+        label: "đã lưu bài đăng của bạn",
+      };
+    return {
+      icon: "ti-message-circle",
+      cls: styles.iconComment,
+      label: "đã bình luận vào bài đăng của bạn",
+    };
+  };
+
+  // Lấy initials + màu nền từ tên
+  const colorPalette = [
+    "#F5E6C8",
+    "#E8C98A",
+    "#F0D4A0",
+    "#F5E0B5",
+    "#E8D4B5",
+    "#F2DEC0",
+  ];
+  const getAvatarBg = (name = "") =>
+    colorPalette[name.charCodeAt(0) % colorPalette.length];
 
   return (
     <header className={styles.header}>
@@ -176,64 +145,89 @@ export default function Header() {
                   </div>
 
                   <div className={styles.dropList}>
-                    {notifications.length === 0 && (
+                    {loading && (
+                      <div className={styles.emptyNoti}>
+                        <span>Đang tải...</span>
+                      </div>
+                    )}
+
+                    {!loading && notifications.length === 0 && (
                       <div className={styles.emptyNoti}>
                         <i className="ti ti-bell-off" aria-hidden="true" />
                         <span>Không có thông báo nào</span>
                       </div>
                     )}
-                    {notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        className={`${styles.notiItem} ${!n.read ? styles.notiUnread : ""}`}
-                        onClick={() => markRead(n.id)}
-                      >
-                        {!n.read && (
-                          <span
-                            className={styles.unreadDot}
-                            aria-hidden="true"
-                          />
-                        )}
-                        <div
-                          className={styles.notiAvatar}
-                          style={{ background: n.userBg }}
-                        >
-                          {n.userInitials}
-                        </div>
-                        <div
-                          className={`${styles.notiTypeIcon} ${n.type === "like" ? styles.iconLike : styles.iconComment}`}
-                        >
-                          <i
-                            className={`ti ${n.type === "like" ? "ti-heart" : "ti-message-circle"}`}
-                            aria-hidden="true"
-                          />
-                        </div>
-                        <div className={styles.notiContent}>
-                          <p className={styles.notiText}>
-                            <strong>{n.user}</strong> {n.message}
-                          </p>
-                          <p className={styles.notiTarget}>{n.target}</p>
-                          <span className={styles.notiTime}>
-                            <i className="ti ti-clock" aria-hidden="true" />{" "}
-                            {n.time}
-                          </span>
-                        </div>
-                        <button
-                          className={styles.deleteBtn}
-                          onClick={(e) => deleteNotification(e, n.id)}
-                          aria-label="Xóa thông báo"
-                        >
-                          <i className="ti ti-x" aria-hidden="true" />
-                        </button>
-                      </div>
-                    ))}
+
+                    {!loading &&
+                      notifications.map((n) => {
+                        const sender = n.senderId;
+                        const senderName = sender?.name || "Ai đó";
+                        const { icon, cls, label } = getTypeInfo(n.type);
+                        const postTitle = n.postId?.description
+                          ? n.postId.description.slice(0, 40) +
+                            (n.postId.description.length > 40 ? "..." : "")
+                          : "bài đăng";
+
+                        return (
+                          <div
+                            key={n._id}
+                            className={`${styles.notiItem} ${!n.isRead ? styles.notiUnread : ""}`}
+                          >
+                            {!n.isRead && (
+                              <span
+                                className={styles.unreadDot}
+                                aria-hidden="true"
+                              />
+                            )}
+                            <div
+                              className={styles.notiAvatar}
+                              style={{ background: getAvatarBg(senderName) }}
+                            >
+                              {sender?.avatar ? (
+                                <img
+                                  src={sender.avatar}
+                                  alt={senderName}
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    borderRadius: "50%",
+                                    objectFit: "cover",
+                                  }}
+                                />
+                              ) : (
+                                getInitials(senderName)
+                              )}
+                            </div>
+                            <div className={`${styles.notiTypeIcon} ${cls}`}>
+                              <i className={`ti ${icon}`} aria-hidden="true" />
+                            </div>
+                            <div className={styles.notiContent}>
+                              <p className={styles.notiText}>
+                                <strong>{senderName}</strong> {label}
+                              </p>
+                              <p className={styles.notiTarget}>{postTitle}</p>
+                              <span className={styles.notiTime}>
+                                <i className="ti ti-clock" aria-hidden="true" />{" "}
+                                {timeAgo(n.createdAt)}
+                              </span>
+                            </div>
+                            <button
+                              className={styles.deleteBtn}
+                              onClick={() => deleteNotification(n._id)}
+                              aria-label="Xóa thông báo"
+                            >
+                              <i className="ti ti-x" aria-hidden="true" />
+                            </button>
+                          </div>
+                        );
+                      })}
                   </div>
 
                   {notifications.length > 0 && (
                     <div className={styles.dropFooter}>
                       <button
                         className={styles.clearAllBtn}
-                        onClick={() => setNotifications([])}
+                        onClick={deleteAllNotifications}
                       >
                         <i className="ti ti-trash" aria-hidden="true" />
                         Xóa tất cả thông báo
@@ -297,9 +291,7 @@ export default function Header() {
                       </span>
                     </div>
                   </div>
-
                   <div className={styles.avatarDropDivider} />
-
                   <button
                     className={styles.avatarDropItem}
                     onClick={handleViewProfile}
@@ -307,9 +299,7 @@ export default function Header() {
                     <i className="ti ti-user-circle" aria-hidden="true" />
                     Thông tin tài khoản
                   </button>
-
                   <div className={styles.avatarDropDivider} />
-
                   <button
                     className={`${styles.avatarDropItem} ${styles.avatarDropLogout}`}
                     onClick={handleLogout}

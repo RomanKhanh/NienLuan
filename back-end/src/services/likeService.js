@@ -1,85 +1,47 @@
 const { Like, Post } = require("../models");
+const { createNotification } = require("./notificationService");
 
-const likePostService = async (postId, userId) => {
+const likePostService = async (postId, userId, io) => {
   try {
-    // kiểm tra đã like chưa
-    const existingLike = await Like.findOne({
-      postId,
-      userId,
-    });
-
+    const existingLike = await Like.findOne({ postId, userId });
     if (existingLike) {
-      return {
-        EC: 1,
-        EM: "You have already liked this post",
-      };
+      return { EC: 1, EM: "You have already liked this post" };
     }
 
-    // tạo like
-    const newLike = await Like.create({
-      postId,
-      userId,
-    });
+    const newLike = await Like.create({ postId, userId });
 
-    // tăng likeCount
-    await Post.findByIdAndUpdate(postId, {
-      $inc: {
-        likeCount: 1,
-      },
-    });
+    await Post.findByIdAndUpdate(postId, { $inc: { likeCount: 1 } });
 
-    return {
-      EC: 0,
-      EM: "Post liked successfully",
-      LIKE: newLike,
-    };
+    // Lấy post để biết chủ sở hữu rồi gửi notification
+    const post = await Post.findById(postId);
+    if (post) {
+      await createNotification(io, {
+        recipientId: post.userId,
+        senderId: userId,
+        type: "like",
+        postId,
+      });
+    }
+
+    return { EC: 0, EM: "Post liked successfully", LIKE: newLike };
   } catch (error) {
     console.log(error);
-
-    return {
-      EC: 2,
-      EM: error.message,
-    };
+    return { EC: 2, EM: error.message };
   }
 };
 
 const unlikePostService = async (postId, userId) => {
   try {
-    // tìm và xoá like
-    const deletedLike = await Like.findOneAndDelete({
-      postId,
-      userId,
-    });
-
+    const deletedLike = await Like.findOneAndDelete({ postId, userId });
     if (!deletedLike) {
-      return {
-        EC: 1,
-        EM: "You have not liked this post",
-      };
+      return { EC: 1, EM: "You have not liked this post" };
     }
-
-    // giảm likeCount
-    await Post.findByIdAndUpdate(postId, {
-      $inc: {
-        likeCount: -1,
-      },
-    });
-
-    return {
-      EC: 0,
-      EM: "Post unliked successfully",
-    };
+    await Post.findByIdAndUpdate(postId, { $inc: { likeCount: -1 } });
+    return { EC: 0, EM: "Post unliked successfully" };
   } catch (error) {
     console.log(error);
-
-    return {
-      EC: 2,
-      EM: error.message,
-    };
+    return { EC: 2, EM: error.message };
   }
 };
 
-module.exports = {
-  likePostService,
-  unlikePostService,
-};
+module.exports = { likePostService, unlikePostService };

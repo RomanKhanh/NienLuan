@@ -7,5 +7,14 @@ const Post = require("./post");
 const Comment = require("./comment");
 const Like = require("./like.js");
 const Favorite = require("./favorite");
+const Notification = require("./notification");
 
-module.exports = { User, Restaurant, Post, Comment, Like, Favorite };
+module.exports = {
+  User,
+  Restaurant,
+  Post,
+  Comment,
+  Like,
+  Favorite,
+  Notification,
+};
