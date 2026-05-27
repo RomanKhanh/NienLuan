@@ -40,6 +40,7 @@ export default function App() {
           setAuth({
             isAuthenticated: true,
             user: {
+              _id: res.USER._id,
               name: res.USER.name,
               email: res.USER.email,
               phone: res.USER.phone,

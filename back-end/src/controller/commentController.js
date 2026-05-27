@@ -5,12 +5,13 @@ const {
 
 const createComment = async (req, res) => {
   try {
+    const io = req.app.get("io");
     const data = {
       ...req.body,
       postId: req.params.postId,
       userId: req.user._id,
     };
-    const result = await createCommentService(data);
+    const result = await createCommentService(data, io);
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).json(error);

@@ -12,7 +12,6 @@ import axios from "../util/axios.customize";
 
 export const SocketContext = createContext(null);
 
-// Helper: chuyển timestamp thành chuỗi "x phút trước"
 export const timeAgo = (dateStr) => {
   const diff = (Date.now() - new Date(dateStr)) / 1000;
   if (diff < 60) return "Vừa xong";
@@ -29,14 +28,13 @@ export const SocketWrapper = ({ children }) => {
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  // Fetch danh sách notification từ DB khi đăng nhập
   const fetchNotifications = useCallback(async () => {
     if (!auth.isAuthenticated) return;
     setLoading(true);
     try {
       const res = await axios.get("/api/notifications");
-      if (res.data.EC === 0) {
-        setNotifications(res.data.NOTIFICATIONS);
+      if (res.EC === 0) {
+        setNotifications(res.NOTIFICATIONS);
       }
     } catch (e) {
       console.error("Fetch notifications error:", e);
@@ -45,7 +43,6 @@ export const SocketWrapper = ({ children }) => {
     }
   }, [auth.isAuthenticated]);
 
-  // Kết nối socket khi đăng nhập
   useEffect(() => {
     if (!auth.isAuthenticated || !auth.user?._id) return;
 

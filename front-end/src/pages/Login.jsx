@@ -41,6 +41,7 @@ export default function Login() {
         setAuth({
           isAuthenticated: true,
           user: {
+            _id: backendRes.USER._id,
             name: userInfo.name,
             email: userInfo.email,
             avatar: userInfo.picture,
@@ -84,6 +85,7 @@ export default function Login() {
         setAuth({
           isAuthenticated: true,
           user: {
+            _id: res.USER._id,
             name: res.USER.name,
             email: res.USER.email,
             phone: res.USER.phone,
@@ -129,6 +131,7 @@ export default function Login() {
         setAuth({
           isAuthenticated: true,
           user: {
+            _id: res.USER._id,
             name: decoded.name,
             email: decoded.email,
             avatar: decoded.picture,

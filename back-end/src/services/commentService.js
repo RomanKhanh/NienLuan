@@ -1,6 +1,7 @@
 const { Comment, Post } = require("../models/");
+const { createNotification } = require("./notificationService");
 
-const createCommentService = async (data) => {
+const createCommentService = async (data, io) => {
   try {
     let comment = await Comment.create({
       postId: data.postId,
@@ -8,6 +9,18 @@ const createCommentService = async (data) => {
       text: data.text,
       rating: data.rating,
     });
+
+    // Gửi notification cho chủ bài đăng
+    const post = await Post.findById(data.postId);
+    if (post) {
+      await createNotification(io, {
+        recipientId: post.userId,
+        senderId: data.userId,
+        type: "comment",
+        postId: data.postId,
+      });
+    }
+
     return {
       EC: 0,
       EM: `Created comment successfully`,

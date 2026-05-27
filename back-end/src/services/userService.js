@@ -58,6 +58,7 @@ const findUserByEmailService = async (email) => {
       EC: 0,
       EM: "Find user successfully",
       USER: {
+        _id: user._id,
         name: user.name,
         email: user.email,
         phone: user.phone,
@@ -100,6 +101,7 @@ const loginUserService = async (email, password) => {
           EM: "Login successfully",
           TOKEN: token,
           USER: {
+            _id: user._id,
             name: user.name,
             email: user.email,
             phone: user.phone,
@@ -138,6 +140,7 @@ const loginGoogleService = async (email) => {
       EM: "Login successfully",
       TOKEN: token,
       USER: {
+        _id: user._id,
         name: user.name,
         email: user.email,
         phone: user.phone,
