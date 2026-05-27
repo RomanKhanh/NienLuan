@@ -28,6 +28,7 @@ export const SocketWrapper = ({ children }) => {
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
+  //Sử dụng useCallback để tránh tạo lại hàm khi component re-render, chỉ khi auth.isAuthenticated thay đổi mới tạo lại
   const fetchNotifications = useCallback(async () => {
     if (!auth.isAuthenticated) return;
     setLoading(true);
@@ -47,6 +48,8 @@ export const SocketWrapper = ({ children }) => {
     if (!auth.isAuthenticated || !auth.user?._id) return;
 
     fetchNotifications();
+
+    //Tạo connect để nhận real-time notification
 
     socketRef.current = io(import.meta.env.VITE_BACKEND_URL, {
       transports: ["websocket"],
