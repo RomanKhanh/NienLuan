@@ -1,9 +1,9 @@
-const { Comment, Restaurant } = require("../models/");
+const { Comment, Post } = require("../models/");
 
 const createCommentService = async (data) => {
   try {
     let comment = await Comment.create({
-      restaurantId: data.restaurantId,
+      postId: data.postId,
       userId: data.userId,
       text: data.text,
       rating: data.rating,
@@ -21,16 +21,16 @@ const createCommentService = async (data) => {
   }
 };
 
-const getRestaurantCommentsService = async (id) => {
+const getPostCommentsService = async (id) => {
   try {
-    const restaurant = await Restaurant.findById(id);
-    if (!restaurant)
+    const post = await Post.findById(id);
+    if (!post)
       return {
         EC: 1,
-        EM: `Restaurant not found`,
+        EM: `Post not found`,
       };
     const comments = await Comment.find({
-      restaurantId: restaurant._id,
+      postId: post._id,
     })
       .populate("userId")
       .sort({ createdAt: -1 });
@@ -47,4 +47,4 @@ const getRestaurantCommentsService = async (id) => {
   }
 };
 
-module.exports = { createCommentService, getRestaurantCommentsService };
+module.exports = { createCommentService, getPostCommentsService };

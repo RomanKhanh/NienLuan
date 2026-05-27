@@ -49,13 +49,13 @@ export default function Home() {
 
           address: p.restaurantId?.address || "No address",
 
-          restaurantRating: p.restaurantId?.rating || 0,
+          restaurantRating: p.restaurantRating || p.restaurantId?.rating || 0,
 
           likeCount: p.likeCount || 0,
 
           isLiked: p.isLiked || false,
 
-          comments: p.restaurantId?.reviewCount || 0,
+          comments: p.commentCount || 0,
 
           image: p.images?.[0] || "",
 

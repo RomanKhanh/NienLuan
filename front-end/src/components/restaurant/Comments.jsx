@@ -29,7 +29,7 @@ function Avatar({ user }) {
   return <div className={styles.itemAvatarFallback}>{initials}</div>;
 }
 
-export default function Comments({ restaurantId }) {
+export default function Comments({ postId }) {
   const [comments, setComments] = useState([]);
   const [newText, setNewText] = useState("");
   const [newRating, setNewRating] = useState(5);
@@ -37,7 +37,7 @@ export default function Comments({ restaurantId }) {
 
   const fetchComments = async () => {
     try {
-      const res = await callFetchCommentsAPI(restaurantId);
+      const res = await callFetchCommentsAPI(postId);
       if (res.EC === 0) {
         setComments(res.COMMENTS);
       }
@@ -55,7 +55,7 @@ export default function Comments({ restaurantId }) {
       if (!newText.trim()) return;
       setSubmitting(true);
 
-      const res = await callCreateCommentAPI(restaurantId, newText, newRating);
+      const res = await callCreateCommentAPI(postId, newText, newRating);
       console.log(res);
       if (res.EC !== 0) {
         notification.error({

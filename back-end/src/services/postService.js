@@ -1,4 +1,4 @@
-const { Post, Like, Favorite } = require("../models/");
+const { Post, Like, Favorite, Comment } = require("../models/");
 
 const createPostService = async (data) => {
   try {
@@ -29,6 +29,38 @@ const getPostsService = async (userId) => {
       .populate("userId")
       .sort({ createdAt: -1 })
       .lean();
+    // Aggregate comment counts per post
+    const postStats = await Comment.aggregate([
+      { $group: { _id: "$postId", commentCount: { $sum: 1 } } },
+    ]);
+    const postCountMap = {};
+    postStats.forEach((s) => {
+      postCountMap[s._id.toString()] = s.commentCount;
+    });
+
+    // Aggregate restaurant-level rating from comments linked to posts
+    const restaurantStats = await Comment.aggregate([
+      {
+        $lookup: {
+          from: "posts",
+          localField: "postId",
+          foreignField: "_id",
+          as: "post",
+        },
+      },
+      { $unwind: "$post" },
+      {
+        $group: {
+          _id: "$post.restaurantId",
+          avgRating: { $avg: "$rating" },
+          commentCount: { $sum: 1 },
+        },
+      },
+    ]);
+    const restaurantStatsMap = {};
+    restaurantStats.forEach((r) => {
+      restaurantStatsMap[r._id.toString()] = r;
+    });
 
     const formattedPosts = await Promise.all(
       posts.map(async (post) => {
@@ -42,10 +74,19 @@ const getPostsService = async (userId) => {
           userId: userId,
         });
 
+        const commentCount = postCountMap[post._id.toString()] || 0;
+        const restaurantRating =
+          (post.restaurantId &&
+          restaurantStatsMap[post.restaurantId._id.toString()]
+            ? restaurantStatsMap[post.restaurantId._id.toString()].avgRating
+            : post.restaurantId?.rating) || 0;
+
         return {
           ...post,
           isLiked: !!liked,
           isFavorite: !!favorite,
+          commentCount,
+          restaurantRating,
         };
       }),
     );
@@ -79,12 +120,40 @@ const getPostByIDService = async (id, userId) => {
       userId: userId,
     });
 
+    // count comments for this post
+    const commentCount = await Comment.countDocuments({ postId: post._id });
+
+    // compute restaurant rating based on comments for posts of the restaurant
+    let restaurantRating = post.restaurantId?.rating || 0;
+    try {
+      const stats = await Comment.aggregate([
+        {
+          $lookup: {
+            from: "posts",
+            localField: "postId",
+            foreignField: "_id",
+            as: "post",
+          },
+        },
+        { $unwind: "$post" },
+        { $match: { "post.restaurantId": post.restaurantId } },
+        {
+          $group: { _id: "$post.restaurantId", avgRating: { $avg: "$rating" } },
+        },
+      ]);
+      if (stats.length > 0) restaurantRating = stats[0].avgRating;
+    } catch (e) {
+      console.log("Error computing restaurant rating:", e.message);
+    }
+
     return {
       EC: 0,
       EM: "Post is found",
       POST: {
         ...post.toObject(),
         isFavorite: !!favorite,
+        commentCount,
+        restaurantRating,
       },
     };
   } catch (error) {

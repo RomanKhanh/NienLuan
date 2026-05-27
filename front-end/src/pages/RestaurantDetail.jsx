@@ -82,7 +82,7 @@ export default function RestaurantDetail() {
           <RestaurantInfo restaurant={restaurant} post={post} />
         </div>
         <div className={styles.commentsWrap}>
-          <Comments restaurantId={restaurant._id} />
+          <Comments postId={postId} />
         </div>
       </main>
 

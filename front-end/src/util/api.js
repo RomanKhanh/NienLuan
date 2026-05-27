@@ -76,14 +76,14 @@ const callFetchRestaurantAPI = async (id) => {
   return axios.get(URL);
 };
 
-const callCreateCommentAPI = async (restaurantId, newText, newRating) => {
-  const URL = `/api/restaurant/${restaurantId}/create-comment`;
+const callCreateCommentAPI = async (postId, newText, newRating) => {
+  const URL = `/api/post/${postId}/create-comment`;
   const data = { text: newText, rating: newRating };
   return axios.post(URL, data);
 };
 
-const callFetchCommentsAPI = async (restaurantId) => {
-  const URL = `/api/restaurant/${restaurantId}/comments`;
+const callFetchCommentsAPI = async (postId) => {
+  const URL = `/api/post/${postId}/comments`;
   return axios.get(URL);
 };
 

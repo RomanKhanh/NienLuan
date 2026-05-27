@@ -1,4 +1,4 @@
-const { Restaurant } = require("../models");
+const { Restaurant, Post, Comment } = require("../models");
 
 const createRestaurantService = async (data) => {
   try {
@@ -41,15 +41,44 @@ const getRestaurantByIDService = async (id) => {
       return {
         EC: 1,
         EM: "Restaurant not found",
-        };
-      }
+      };
+    }
+
+    // Tính điểm trung bình và số lượng đánh giá dựa trên comments của các post thuộc restaurant
+    const stats = await Comment.aggregate([
+      {
+        $lookup: {
+          from: "posts",
+          localField: "postId",
+          foreignField: "_id",
+          as: "post",
+        },
+      },
+      { $unwind: "$post" },
+      { $match: { "post.restaurantId": restaurant._id } },
+      {
+        $group: {
+          _id: "$post.restaurantId",
+          avgRating: { $avg: "$rating" },
+          reviewCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const computedRating = stats.length > 0 ? stats[0].avgRating : 0;
+    const computedReviewCount = stats.length > 0 ? stats[0].reviewCount : 0;
+
     return {
       EC: 0,
       EM: "Find restaurant successfully",
-      RESTAURANT: restaurant,
+      RESTAURANT: {
+        ...restaurant.toObject(),
+        rating: computedRating,
+        reviewCount: computedReviewCount,
+      },
     };
   } catch (error) {
-    console.log(">>> Error find restaurant by email: ", error);
+    console.log(">>> Error find restaurant by id: ", error);
     return {
       EC: 2,
       EM: "Failed to find restaurant",

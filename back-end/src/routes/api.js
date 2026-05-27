@@ -20,7 +20,7 @@ const {
 } = require("../controller/postController");
 const {
   createComment,
-  getRestaurantComments,
+  getPostComments,
 } = require("../controller/commentController");
 const { likePost, unlikePost } = require("../controller/likeController.js");
 const {
@@ -57,8 +57,8 @@ apiRouter.get("/post/:id", getPostByID);
 apiRouter.get("/posts", getPosts);
 
 // Comment
-apiRouter.post("/restaurant/:restaurantId/create-comment", createComment);
-apiRouter.get("/restaurant/:restaurantId/comments", getRestaurantComments);
+apiRouter.post("/post/:postId/create-comment", createComment);
+apiRouter.get("/post/:postId/comments", getPostComments);
 
 // Like
 apiRouter.post("/post/:postId/like", likePost);

@@ -1,13 +1,13 @@
 const {
   createCommentService,
-  getRestaurantCommentsService,
+  getPostCommentsService,
 } = require("../services/commentService");
 
 const createComment = async (req, res) => {
   try {
     const data = {
       ...req.body,
-      restaurantId: req.params.restaurantId,
+      postId: req.params.postId,
       userId: req.user._id,
     };
     const result = await createCommentService(data);
@@ -17,14 +17,14 @@ const createComment = async (req, res) => {
   }
 };
 
-const getRestaurantComments = async (req, res) => {
+const getPostComments = async (req, res) => {
   try {
-    const restaurantId = req.params.restaurantId;
-    const comments = await getRestaurantCommentsService(restaurantId);
+    const postId = req.params.postId;
+    const comments = await getPostCommentsService(postId);
     return res.status(200).json(comments);
   } catch (error) {
     return res.status(500).json(error);
   }
 };
 
-module.exports = { createComment, getRestaurantComments };
+module.exports = { createComment, getPostComments };
