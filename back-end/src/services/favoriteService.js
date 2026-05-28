@@ -1,4 +1,4 @@
-const { Favorite, Post } = require("../models");
+const { Favorite, Post, Comment } = require("../models/");
 const { createNotification } = require("./notificationService");
 
 const addFavoriteService = async (userId, postId, io) => {
@@ -47,14 +47,63 @@ const removeFavoriteService = async (userId, postId) => {
 
 const getFavoritesByUserIdService = async (userId) => {
   try {
-    const favorites = await Favorite.find({ userId }).populate({
-      path: "postId",
-      populate: [{ path: "restaurantId" }, { path: "userId" }],
-    });
+    const favorites = await Favorite.find({ userId })
+      .populate({
+        path: "postId",
+        populate: [{ path: "restaurantId" }, { path: "userId" }],
+      })
+      .lean();
+
+    const formattedFavorites = await Promise.all(
+      favorites.map(async (fav) => {
+        const post = fav.postId;
+
+        const commentCount = await Comment.countDocuments({ postId: post._id });
+
+        let restaurantRating = post.restaurantId?.rating || 0;
+
+        try {
+          const stats = await Comment.aggregate([
+            {
+              $lookup: {
+                from: "posts",
+                localField: "postId",
+                foreignField: "_id",
+                as: "post",
+              },
+            },
+            { $unwind: "$post" },
+            { $match: { "post.restaurantId": post.restaurantId._id } },
+            {
+              $group: {
+                _id: "$post.restaurantId",
+                avgRating: { $avg: "$rating" },
+              },
+            },
+          ]);
+
+          if (stats.length > 0) {
+            restaurantRating = stats[0].avgRating;
+          }
+        } catch (error) {
+          console.log(
+            "Error computing restaurant rating for favorite post:",
+            error.message,
+          );
+        }
+
+        return {
+          ...post,
+          commentCount,
+          restaurantRating,
+        };
+      }),
+    );
+
     return {
       EC: 0,
       EM: "Get favorites successfully",
-      FAVORITES: favorites.map((fav) => fav.postId),
+      FAVORITES: formattedFavorites,
     };
   } catch (error) {
     console.log(error);

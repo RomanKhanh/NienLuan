@@ -189,7 +189,7 @@ function FavoriteCard({ post, removing, onUnlike, onDetail }) {
   const restaurant = post?.restaurantId || {};
   const user = post?.userId || {};
 
-  const rating = restaurant?.rating || 0;
+  const rating = post?.restaurantRating || restaurant?.rating || 0;
 
   const fullStars = Math.floor(rating);
   const emptyStars = 5 - fullStars;
@@ -283,7 +283,7 @@ function FavoriteCard({ post, removing, onUnlike, onDetail }) {
 
           <span className={styles.actionItem}>
             <i className="ti ti-message-circle" />
-            {post?.restaurantId?.reviewCount || 0}
+            {post?.commentCount || 0}
           </span>
         </div>
 
