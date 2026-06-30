@@ -77,6 +77,39 @@
   align-items: center;
 }
 
+.heroFilterSelectWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.heroFilterSelect {
+  height: 46px;
+  padding: 0 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-md);
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  outline: none;
+  cursor: pointer;
+  min-width: 180px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.heroFilterSelect:focus {
+  border-color: var(--brand-mid);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.heroFilterSelect option {
+  color: #2b1b0e;
+}
+
 .heroSearchWrap i {
   position: absolute;
   left: 13px;

@@ -36,7 +36,13 @@ const getPostByID = async (req, res) => {
 
 const getPosts = async (req, res) => {
   try {
-    const posts = await getPostsService(req.user._id || req.user.id);
+    const search = req.query.search || "";
+    const category = req.query.category || "";
+    const posts = await getPostsService(
+      req.user._id || req.user.id,
+      search,
+      category,
+    );
     return res.status(200).json(posts);
   } catch (error) {
     return res.status(500).json(error);

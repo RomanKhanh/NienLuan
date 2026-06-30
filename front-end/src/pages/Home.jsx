@@ -13,14 +13,28 @@ import { callFetchPostsAPI } from "../util/api";
 import { Avatar } from "antd";
 
 const FILTERS = [
-  { key: "loai-mon", icon: "ti-tools-kitchen-2", label: "Loại món" },
-  { key: "khu-vuc", icon: "ti-map-pin", label: "Khu vực" },
   { key: "so-sao", icon: "ti-star", label: "Số sao" },
   { key: "moi-nhat", icon: "ti-clock", label: "Mới nhất", defaultActive: true },
   { key: "pho-bien", icon: "ti-heart", label: "Phổ biến" },
 ];
 
 const PAGE_SIZE = 3;
+
+const CATEGORY_OPTIONS = [
+  "Nhà hàng Nhật",
+  "Nhà hàng Hàn quốc",
+  "Nhà hàng Âu",
+  "Cơm tấm",
+  "Phở",
+  "Bún bò",
+  "Bánh xèo",
+  "Hủ tiếu",
+  "Lẩu",
+  "Hải sản",
+  "Đồ nướng",
+  "Chay",
+  "Cà phê & Tráng miệng",
+];
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
@@ -29,14 +43,16 @@ export default function Home() {
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [activeFilters, setActiveFilters] = useState(["moi-nhat"]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (keyword = search, category = selectedCategory) => {
     try {
-      const res = await callFetchPostsAPI();
+      setLoading(true);
+      const res = await callFetchPostsAPI(keyword, category);
       if (res?.EC === 0) {
         const formattedPosts = res.POSTS.map((p) => ({
           id: p._id,
@@ -63,6 +79,7 @@ export default function Home() {
 
           emoji: "🍜",
 
+          createdAt: p.createdAt,
           time: new Date(p.createdAt).toLocaleDateString(),
 
           poster: {
@@ -85,6 +102,8 @@ export default function Home() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,18 +112,31 @@ export default function Home() {
   }, []);
 
   const toggleFilter = (key) => {
-    setActiveFilters((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
-    );
+    setActiveFilters((prev) => {
+      if (prev.includes(key)) {
+        return ["moi-nhat"];
+      }
+      return [key];
+    });
+    setPage(1);
   };
 
-  const filtered = posts.filter((p) => {
-    const restaurantName = p.restaurantId?.name?.toLowerCase() || "";
-    const address = p.restaurantId?.address?.toLowerCase() || "";
-    const keyword = search.toLowerCase();
+  const sortedPosts = [...posts];
+  const activeSort = activeFilters[0] || "moi-nhat";
 
-    return restaurantName.includes(keyword) || address.includes(keyword);
-  });
+  if (activeSort === "so-sao") {
+    sortedPosts.sort(
+      (a, b) => (b.restaurantRating || 0) - (a.restaurantRating || 0),
+    );
+  } else if (activeSort === "pho-bien") {
+    sortedPosts.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
+  } else {
+    sortedPosts.sort(
+      (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+    );
+  }
+
+  const filtered = sortedPosts;
 
   const visible = filtered.slice(0, page * PAGE_SIZE);
   const hasMore = visible.length < filtered.length;
@@ -117,8 +149,19 @@ export default function Home() {
     }, 600);
   };
 
+  const handleSearch = (keyword = search, category = selectedCategory) => {
+    setPage(1);
+    fetchPosts(keyword, category);
+  };
+
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+    setPage(1);
+    fetchPosts(search, category);
+  };
+
   const handlePostSubmit = () => {
-    fetchPosts();
+    fetchPosts(search, selectedCategory);
   };
 
   return (
@@ -146,15 +189,38 @@ export default function Home() {
             <input
               className={styles.heroSearchInp}
               type="text"
-              placeholder="Tìm tên quán, món ăn, địa điểm..."
+              placeholder="Tìm tên quán ăn..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
                 setPage(1);
               }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSearch(search, selectedCategory);
+                }
+              }}
             />
           </div>
-          <button className={styles.heroSearchBtn}>
+          <div className={styles.heroFilterSelectWrap}>
+            <select
+              className={styles.heroFilterSelect}
+              value={selectedCategory}
+              onChange={(e) => handleCategoryChange(e.target.value)}
+            >
+              <option value="">Tất cả loại</option>
+              {CATEGORY_OPTIONS.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            className={styles.heroSearchBtn}
+            onClick={() => handleSearch(search, selectedCategory)}
+          >
             <i className="ti ti-search" aria-hidden="true" />
             Tìm kiếm
           </button>
@@ -163,7 +229,22 @@ export default function Home() {
 
       {/* ── POST BAR + FILTER ── */}
       <div className={styles.postBar}>
-        <div className={styles.filterRow}></div>
+        <div className={styles.filterRow}>
+          <span className={styles.filterLbl}>
+            <i className="ti ti-adjustments-horizontal" aria-hidden="true" />{" "}
+            Lọc:
+          </span>
+          {FILTERS.map((f) => (
+            <button
+              key={f.key}
+              className={`${styles.chip} ${activeFilters.includes(f.key) ? styles.chipActive : ""}`}
+              onClick={() => toggleFilter(f.key)}
+            >
+              <i className={`ti ${f.icon}`} aria-hidden="true" />
+              {f.label}
+            </button>
+          ))}
+        </div>
         {auth.isAuthenticated && (
           <button
             className={styles.btnNewPost}

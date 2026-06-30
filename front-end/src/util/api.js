@@ -61,9 +61,12 @@ const callCreatePostAPI = (restaurantId, description, images, rating) => {
   return axios.post(URL, data);
 };
 
-const callFetchPostsAPI = async () => {
+const callFetchPostsAPI = async (search = "", category = "") => {
   const URL = "/api/posts";
-  return axios.get(URL);
+  const params = {};
+  if (search) params.search = search;
+  if (category) params.category = category;
+  return axios.get(URL, { params });
 };
 
 const callGetPostByIdAPI = async (id) => {

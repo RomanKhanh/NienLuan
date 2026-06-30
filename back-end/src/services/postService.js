@@ -22,13 +22,28 @@ const createPostService = async (data) => {
   }
 };
 
-const getPostsService = async (userId) => {
+const getPostsService = async (userId, search = "", category = "") => {
   try {
+    const normalizedSearch = search?.trim().toLowerCase() || "";
+    const normalizedCategory = category?.trim().toLowerCase() || "";
+
     const posts = await Post.find()
       .populate("restaurantId")
       .populate("userId")
       .sort({ createdAt: -1 })
       .lean();
+
+    const filteredPosts = posts.filter((post) => {
+      const matchesName =
+        !normalizedSearch ||
+        post.restaurantId?.name?.toLowerCase().includes(normalizedSearch);
+      const matchesCategory =
+        !normalizedCategory ||
+        post.restaurantId?.category?.toLowerCase() === normalizedCategory;
+
+      return matchesName && matchesCategory;
+    });
+
     // Aggregate comment counts per post
     const postStats = await Comment.aggregate([
       { $group: { _id: "$postId", commentCount: { $sum: 1 } } },
@@ -63,7 +78,7 @@ const getPostsService = async (userId) => {
     });
 
     const formattedPosts = await Promise.all(
-      posts.map(async (post) => {
+      filteredPosts.map(async (post) => {
         const liked = await Like.findOne({
           postId: post._id,
           userId: userId,
