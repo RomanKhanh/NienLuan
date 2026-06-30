@@ -163,22 +163,7 @@ export default function Home() {
 
       {/* ── POST BAR + FILTER ── */}
       <div className={styles.postBar}>
-        <div className={styles.filterRow}>
-          <span className={styles.filterLbl}>
-            <i className="ti ti-adjustments-horizontal" aria-hidden="true" />{" "}
-            Lọc:
-          </span>
-          {FILTERS.map((f) => (
-            <button
-              key={f.key}
-              className={`${styles.chip} ${activeFilters.includes(f.key) ? styles.chipActive : ""}`}
-              onClick={() => toggleFilter(f.key)}
-            >
-              <i className={`ti ${f.icon}`} aria-hidden="true" />
-              {f.label}
-            </button>
-          ))}
-        </div>
+        <div className={styles.filterRow}></div>
         {auth.isAuthenticated && (
           <button
             className={styles.btnNewPost}
@@ -192,40 +177,47 @@ export default function Home() {
 
       {/* ── FEED ── */}
       <main className={styles.feed}>
-        {visible.length === 0 && (
+        {!auth.isAuthenticated ? (
+          <div className={styles.empty}>
+            <i className="ti ti-search-off" aria-hidden="true" />
+            <p>Bạn cần đăng nhập để xem các bài post</p>
+          </div>
+        ) : visible.length === 0 ? (
           <div className={styles.empty}>
             <i className="ti ti-search-off" aria-hidden="true" />
             <p>Không tìm thấy quán ăn nào phù hợp</p>
           </div>
-        )}
+        ) : (
+          <>
+            {visible.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                onDetail={() => navigate(`/post/${post.id}`)}
+              />
+            ))}
 
-        {visible.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            onDetail={() => navigate(`/post/${post.id}`)}
-          />
-        ))}
-
-        {hasMore && (
-          <div className={styles.loadMore}>
-            <button
-              className={styles.btnLoad}
-              onClick={handleLoadMore}
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <span className={styles.spinner} /> Đang tải...
-                </>
-              ) : (
-                <>
-                  <i className="ti ti-refresh" aria-hidden="true" /> Tải thêm
-                  bài đăng
-                </>
-              )}
-            </button>
-          </div>
+            {hasMore && (
+              <div className={styles.loadMore}>
+                <button
+                  className={styles.btnLoad}
+                  onClick={handleLoadMore}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <span className={styles.spinner} /> Đang tải...
+                    </>
+                  ) : (
+                    <>
+                      <i className="ti ti-refresh" aria-hidden="true" />
+                      Tải thêm bài đăng
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </main>
 

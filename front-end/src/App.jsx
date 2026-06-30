@@ -7,6 +7,10 @@ import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Favorites from "./pages/Favorites";
 import Profile from "./pages/Profile";
+import About from "./pages/About";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Support from "./pages/Support";
 import { useContext, useEffect } from "react";
 import { AuthContext } from "./context/auth.context";
 import axios from "./util/axios.customize";
@@ -73,6 +77,10 @@ export default function App() {
       <Route path="/post/:postId" element={<RestaurantDetail />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/support" element={<Support />} />
     </Routes>
   );
 }

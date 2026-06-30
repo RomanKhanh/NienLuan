@@ -97,14 +97,8 @@ export default function Header() {
         <Link to="/" className={styles.navLink}>
           Khám phá
         </Link>
-        <Link to="/search" className={styles.navLink}>
-          Gần tôi
-        </Link>
         <Link to="/favorites" className={styles.navLink}>
           Yêu thích
-        </Link>
-        <Link to="/search" className={styles.navLink}>
-          Đánh giá
         </Link>
       </nav>
 
